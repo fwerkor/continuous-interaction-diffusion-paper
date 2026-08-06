@@ -48,7 +48,7 @@ scripts/                   Build and validation utilities
 
 ## Status
 
-- Repository visibility: private during drafting
+- Repository visibility: public
 - Public PDF preview: disabled
 - Scope of v1: language models and read-only external sources
 
