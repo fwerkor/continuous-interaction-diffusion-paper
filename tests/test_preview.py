@@ -40,7 +40,7 @@ class PreviewControlsTest(unittest.TestCase):
             text=True,
         )
 
-    def test_default_configuration_disables_preview_and_blocks_indexing(self) -> None:
+    def test_default_configuration_enables_preview_and_blocks_indexing(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "github-output"
             subprocess.run(
@@ -57,7 +57,7 @@ class PreviewControlsTest(unittest.TestCase):
                 text=True,
             )
             values = dict(line.split("=", 1) for line in output.read_text().splitlines())
-            self.assertEqual(values["enable_public_preview"], "false")
+            self.assertEqual(values["enable_public_preview"], "true")
             self.assertEqual(values["block_search_indexing"], "true")
 
     def test_blocked_preview_emits_noindex_and_robots_disallow(self) -> None:

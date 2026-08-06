@@ -49,7 +49,7 @@ scripts/                   Build and validation utilities
 ## Status
 
 - Repository visibility: public
-- Public PDF preview: disabled
+- Public PDF preview: enabled through GitHub Pages
 - Scope of v1: language models and read-only external sources
 
 ## License
