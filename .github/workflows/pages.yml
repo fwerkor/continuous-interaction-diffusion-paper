@@ -15,8 +15,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  preview-config:
+    name: Read preview configuration
+    runs-on: ubuntu-latest
+    outputs:
+      enable_public_preview: ${{ steps.config.outputs.enable_public_preview }}
+      block_search_indexing: ${{ steps.config.outputs.block_search_indexing }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Read preview configuration
+        id: config
+        run: python3 scripts/read_preview_config.py --github-output "$GITHUB_OUTPUT"
+
   build-and-deploy:
     name: Build and publish online preview
+    needs: preview-config
+    if: needs.preview-config.outputs.enable_public_preview == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
@@ -26,12 +42,7 @@ jobs:
       - name: Check out source
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - name: Read preview configuration
-        id: preview-config
-        run: python3 scripts/read_preview_config.py --github-output "$GITHUB_OUTPUT"
-
       - name: Compile paper
-        if: steps.preview-config.outputs.enable_public_preview == 'true'
         uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # 4.1.0
         with:
           root_file: paper.tex
@@ -45,27 +56,24 @@ jobs:
             -outdir=build
 
       - name: Install PDF validator
-        if: steps.preview-config.outputs.enable_public_preview == 'true'
         run: python3 -m pip install --disable-pip-version-check --requirement requirements-ci.txt
 
       - name: Validate build
-        if: steps.preview-config.outputs.enable_public_preview == 'true'
         run: |
           python3 scripts/check_log.py build/paper.log
           python3 scripts/validate_pdf.py build/paper.pdf
 
       - name: Generate browser preview
         env:
-          ENABLE_PUBLIC_PREVIEW: ${{ steps.preview-config.outputs.enable_public_preview }}
-          BLOCK_SEARCH_INDEXING: ${{ steps.preview-config.outputs.block_search_indexing }}
+          BLOCK_SEARCH_INDEXING: ${{ needs.preview-config.outputs.block_search_indexing }}
         run: |
           python3 scripts/generate_preview.py \
             --pdf build/paper.pdf \
             --output public \
-            --title "LaTeX Paper Preview" \
+            --title "Continuous Interaction Diffusion" \
             --repository "$GITHUB_REPOSITORY" \
             --sha "$GITHUB_SHA" \
-            --public-preview-enabled "$ENABLE_PUBLIC_PREVIEW" \
+            --public-preview-enabled true \
             --block-search-indexing "$BLOCK_SEARCH_INDEXING"
 
       - name: Configure GitHub Pages
