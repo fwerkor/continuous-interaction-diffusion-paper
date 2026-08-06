@@ -1,10 +1,9 @@
-% Toggle anonymous review mode here.
+% arXiv preprint mode: authors are visible.
 \newif\ifanonymous
-\anonymoustrue
-% \anonymousfalse
+\anonymousfalse
 
-\newcommand{\papertitle}{A Reproducible Research Paper Template}
-\newcommand{\papershorttitle}{Reproducible Paper Template}
+\newcommand{\papertitle}{Continuous Interaction Diffusion: A Diffusion-Native Runtime for Asynchronous Tool-Augmented Reasoning}
+\newcommand{\papershorttitle}{Continuous Interaction Diffusion}
 
 \title{\papertitle}
 
@@ -12,21 +11,17 @@
   \author{Anonymous Authors}
 \else
   \author{%
-    First Author\\
-    Department or Institution\\
-    \texttt{first.author@example.com}
-    \and
-    Second Author\\
-    Department or Institution\\
-    \texttt{second.author@example.com}
+    Cao Yuhang\\
+    Nanjing University\\
+    \texttt{caoyuhang@fwerkor.com}
   }
 \fi
 
-\date{}
+\date{August 2026}
 
 \hypersetup{%
   pdftitle={\papertitle},
-  pdfauthor={\ifanonymous Anonymous Authors\else First Author and Second Author\fi},
-  pdfsubject={Academic research paper},
-  pdfkeywords={research, reproducibility, LaTeX}
+  pdfauthor={\ifanonymous Anonymous Authors\else Cao Yuhang\fi},
+  pdfsubject={Diffusion language models, tool-augmented reasoning, and asynchronous runtimes},
+  pdfkeywords={diffusion language models, tool use, asynchronous reasoning, latent reasoning, model-runtime co-design}
 }

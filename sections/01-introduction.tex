@@ -1,13 +1,20 @@
 \section{Introduction}
 \label{sec:introduction}
 
-Introduce the problem and explain why it matters. A strong introduction usually establishes the practical or scientific context, identifies the limitation in prior work, states the central idea, and previews the evidence supporting the claims.
+Language models increasingly rely on external tools for facts, computation, retrieval, and interaction with digital environments. The prevailing interface is nevertheless inherited from autoregressive generation: a model first emits a complete action description, execution blocks until the result is available, the result is appended to the transcript, and reasoning resumes in a later turn. ReAct-style agents make reasoning and acting explicit and interleaved \citep{yao2022react}, while Toolformer-style training teaches models when and how to insert API calls into token sequences \citep{schick2023toolformer}. Both approaches assume that cognition and external input are naturally segmented into discrete textual rounds.
 
-A concise contribution list can be useful:
+This assumption is especially restrictive for diffusion language models (dLLMs). Masked and block diffusion models can revise multiple positions, expose flexible generation orders, and trade additional denoising computation for refinement \citep{nie2025llada,arriola2025blockdiffusion,ye2025dream}. Yet current dLLM agents largely preserve the same call--wait--observe protocol. DLLM-Searcher, for example, decodes a tool-call region early and continues reasoning while search is in flight, improving overlap but retaining an explicit serialized call boundary \citep{zhao2026dllmsearcher}. More broadly, direct application of current dLLMs to conventional agent workflows exhibits failures in symbolic precision and temporal feedback handling \citep{lu2026bitterlesson}. These results suggest that the model architecture and the runtime interface should be redesigned together rather than treating a dLLM as a drop-in autoregressive agent backbone.
+
+We propose \emph{Continuous Interaction Diffusion} (\cid), a diffusion-native architecture in which model cognition, external perception, and user-visible generation evolve concurrently. The central shift is from \emph{tool calls} to \emph{persistent perceptual bindings}. When the model repeatedly expresses a need for information, the runtime maintains a binding to an external source. If the source is static, the runtime can reuse the cached result while re-projecting it into each evolving thought state. If the source changes, the runtime refreshes or streams the observation. The model therefore need not repeatedly serialize ``look up $x$''; its continuing need keeps the relevant percept active, analogous to sustained attention to an external object.
+
+\cid organizes state into three coupled channels. The \emph{fact channel} contains user-emphasized or externally maintained information that the model may read but cannot rewrite; facts may change over time because their source changes. The \emph{thought channel} contains hypotheses, plans, tool intentions, tool-result interpretations, uncertainty, and intermediate reasoning. We represent it as a \emph{Typed Cognitive Tensor} (\tct): a continuous, locally diffused structure with role distributions, symbolic anchors, source links, uncertainty, and per-cell noise levels. The \emph{display channel} is the evolving token canvas that ultimately becomes the user-visible response. The three channels are coupled, but their write permissions and representations differ.
+
+This paper is deliberately an architectural proposal. It aims to make the idea precise enough to implement and falsify without presenting unperformed experiments. Its contributions are:
 \begin{itemize}[leftmargin=*]
-  \item We formulate the target problem and define the evaluation criteria.
-  \item We propose \methodname, a method designed around the identified constraints.
-  \item We evaluate the method across representative settings and report reproducible results.
+  \item We formulate the mismatch between turn-based tool protocols and continuously revisable diffusion generation, and define continuous tool interaction as a model--runtime problem.
+  \item We introduce a three-channel architecture with an externally controlled fact channel, a typed continuous thought channel, and a discrete display channel.
+  \item We define persistent perceptual bindings that distinguish repeated cognitive refresh from repeated external execution, supporting both static and changing information sources.
+  \item We specify an asynchronous runtime, local diffusion clocks, model-side intent interface, training objectives, and a concrete evaluation protocol for read-only tools.
 \end{itemize}
 
-The remainder of the paper presents background in \cref{sec:background}, the method in \cref{sec:method}, and the evaluation in \cref{sec:experiments}.
+The remainder of the paper motivates the design in \cref{sec:background}, formalizes \cid in \cref{sec:method}, outlines an empirical research agenda in \cref{sec:experiments}, relates the proposal to prior work in \cref{sec:related-work}, and discusses limitations in \cref{sec:discussion}.

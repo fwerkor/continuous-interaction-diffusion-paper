@@ -1,0 +1,25 @@
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={draw, rounded corners=2pt, minimum height=1.0cm, align=center, inner sep=6pt},
+  arrow/.style={-{Latex[length=2mm]}, thick},
+  dashedarrow/.style={-{Latex[length=2mm]}, thick, dashed},
+  edgeLabel/.style={font=\scriptsize, fill=white, inner sep=1.5pt}
+]
+  \node[box, fill=factfill, minimum width=4.2cm] (fact) {Fact channel $F$\\externally updated, model-read-only};
+  \node[box, fill=thoughtfill, minimum width=4.9cm, right=2.0cm of fact] (thought) {Thought channel $T$\\Typed Cognitive Tensor};
+  \node[box, fill=displayfill, minimum width=4.2cm, right=2.0cm of thought] (display) {Display channel $Y$\\user-visible token canvas};
+
+  \node[box, minimum width=4.2cm, below=1.55cm of fact] (tools) {Read-only sources\\search, files, state, calculators};
+  \node[box, fill=runtimefill, minimum width=4.9cm, below=1.55cm of thought] (runtime) {CID runtime\\intent readout, binding lifecycle, refresh};
+
+  \draw[arrow] (fact.east) -- node[edgeLabel, above] {protected conditioning} (thought.west);
+  \draw[arrow] (thought.east) -- node[edgeLabel, above] {semantic realization} (display.west);
+  \draw[arrow] (display.south west) to[bend right=24]
+    node[edgeLabel, below] {format and length feedback} (thought.south east);
+
+  \draw[arrow] (thought.south) -- node[edgeLabel, right] {latent needs} (runtime.north);
+  \draw[arrow] (runtime.west) -- node[edgeLabel, above] {bind / refresh} (tools.east);
+  \draw[arrow] (tools.north) -- node[edgeLabel, left] {external updates} (fact.south);
+  \draw[dashedarrow] (tools.north east) to[bend left=18]
+    node[edgeLabel, below right] {perceptual projections} (thought.south west);
+\end{tikzpicture}

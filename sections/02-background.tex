@@ -1,15 +1,65 @@
-\section{Background and Motivation}
+\section{Background and Design Requirements}
 \label{sec:background}
 
-Define the concepts, notation, and assumptions required by the method. Prefer precise notation over informal descriptions when ambiguity would affect the argument. For example, let $x \in \mathcal{X}$ denote an input and let $f_{\theta}$ be a model parameterized by $\theta$.
+\subsection{Turn-based tool use}
 
-The empirical risk on a dataset $\mathcal{D}$ can be written as
+A conventional tool-using language model alternates between token generation and environment transitions. Let $q$ be the user request, $r_k$ a textual reasoning state, $a_k$ a serialized action, and $o_k$ the resulting observation. A typical trajectory is
 \begin{equation}
-  \mathcal{L}(\theta; \mathcal{D})
-  = \frac{1}{|\mathcal{D}|}
-    \sum_{(x,y) \in \mathcal{D}}
-    \ell\!\left(f_{\theta}(x), y\right).
-  \label{eq:empirical-risk}
+  q \rightarrow r_1 \rightarrow a_1 \rightarrow o_1
+  \rightarrow r_2 \rightarrow a_2 \rightarrow o_2 \rightarrow y.
+  \label{eq:turn-based}
 \end{equation}
+Even when calls are executed asynchronously, the model interface commonly treats observations as later transcript events. Event-driven agent systems and speculative tool calling reduce idle time \citep{ginart2024asynchronous,hooper2026realtime}, but the underlying model state remains predominantly a sequence of discrete linguistic commitments.
 
-Use this section to motivate the design choices introduced later rather than duplicating the related-work discussion.
+This design imposes three costs. First, an information need must be serialized before perception can begin. Second, the returned information is normally incorporated only in a subsequent generation segment. Third, persistent attention to a source is represented as repeated calls or repeated prompt content rather than as a maintained model--environment relation.
+
+\subsection{Diffusion language models}
+
+A masked diffusion language model corrupts a sequence and learns to reconstruct masked tokens through iterative denoising. LLaDA demonstrated that this objective can scale to instruction-following language models \citep{nie2025llada}; Dream and block diffusion further explored flexible order, autoregressive initialization, variable-length generation, and efficient serving \citep{ye2025dream,arriola2025blockdiffusion}. Planned Diffusion combines an autoregressive plan with parallel span generation \citep{israel2025planned}, while remasking methods reopen uncertain decisions and refine earlier tokens \citep{huang2025remedi}.
+
+These capabilities matter for tool interaction because an observation that arrives at time $s$ need not affect only future tokens. It may alter hypotheses, tool needs, plans, and already drafted output across the state. A diffusion-native runtime should therefore treat external events as changes to the current generative posterior, not merely as appended prompt text.
+
+\subsection{Continuous latent reasoning}
+
+Natural-language chains of thought force every intermediate computation through a discrete textual bottleneck. Coconut instead feeds continuous hidden states back as reasoning states and reports that such states can represent multiple alternative continuations \citep{hao2024coconut}. LaDiR uses latent diffusion over structured thought blocks to enable holistic revision \citep{kang2025ladir}. These works motivate a continuous thought representation, but they do not define an external interaction protocol in which latent information needs establish persistent asynchronous percepts.
+
+\subsection{Design requirements}
+
+A concrete CID implementation should satisfy the following requirements.
+
+\paragraph{Continuous evolution.}
+Reasoning and display generation must continue while external operations are in flight; a result should enter the current trajectory without restarting a separate model turn.
+
+\paragraph{Non-linguistic intent.}
+A coarse information need should be exploitable before a complete tool name, query string, or JSON object has converged. Tool identity is known to be linearly readable from internal activations in autoregressive models \citep{wu2026toolreadable}, suggesting that a model-side typed interface can expose such information directly.
+
+\paragraph{Persistent perception.}
+Repeated need for the same information must be representable as an active binding. For static sources, persistence should refresh the cognitive influence without redundant I/O. For dynamic sources, persistence should request new values or consume a stream.
+
+\paragraph{Externally controlled facts.}
+Some information must be protected from model rewriting, yet may change because the user, environment, or tool updates it. Thus ``read-only'' refers to the model's permission, not temporal immutability.
+
+\paragraph{Joint revision.}
+New observations should be able to alter multiple thought and display regions in parallel. The runtime must support local reopening rather than either freezing all previous decisions or restarting from full noise.
+
+\paragraph{Precise symbolic grounding.}
+Pure latent states are insufficient for paths, numbers, entity identifiers, tool schemas, and provenance. The thought representation therefore needs continuous content plus sparse symbolic anchors.
+
+\begin{table}[t]
+  \centering
+  \small
+  \caption{Interaction assumptions of representative designs. ``Persistent'' means that an information need can remain bound to a source across model updates without repeated textual calls.}
+  \label{tab:interaction-comparison}
+  \resizebox{\columnwidth}{!}{%
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Design & Revises past state & Async. I/O & Persistent percept \\
+    \midrule
+    AR ReAct & No & Optional & No \\
+    Async. AR agent & No & Yes & Runtime-only \\
+    dLLM with early call region & Partial & Yes & No \\
+    \cid & Yes & Yes & Model--runtime \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}

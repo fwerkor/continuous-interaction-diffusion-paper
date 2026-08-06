@@ -1,15 +1,95 @@
-\section{Additional Experimental Details}
-\label{app:details}
+\section{Reference Runtime Interface}
+\label{app:runtime-interface}
 
-Place derivations, extended tables, prompts, implementation details, and additional analyses here. Ensure that the main paper remains understandable without the appendix.
+A read-only source registered with a CID runtime may expose the following conceptual schema:
 
-\section{Reproducibility Checklist}
-\label{app:checklist}
+\begin{verbatim}
+source:
+  name: document_search
+  description: retrieve passages from a corpus
+  input_schema:
+    query: text
+    scope: optional identifier
+    top_k: optional integer
+  properties:
+    read_only: true
+    cacheable: true
+    streamable: true
+    cancellable: true
+    versioned: true
+  default_refresh:
+    mode: on_version_change
+    max_age_ms: 1000
+\end{verbatim}
 
+The runtime should not require that every source support every property. A calculator may be cacheable but not streamable; a clock is dynamic but inexpensive; a file may expose a version identifier; a search endpoint may return incremental results without a stable version.
+
+\section{Binding State Machine}
+\label{app:binding-state}
+
+A perceptual binding can use the following lifecycle:
+\begin{align}
+  \textsc{candidate} &\rightarrow \textsc{active}
+  \rightarrow \textsc{waiting} \notag\\
+  &\rightarrow \textsc{available}
+  \rightarrow \textsc{refreshing}
+  \rightarrow \textsc{retired}.
+\end{align}
+A binding can move from \textsc{available} directly back to \textsc{active} when the value is unchanged and only cognitive re-projection is required. It moves to \textsc{refreshing} when the need remains active and the source freshness policy requires external work.
+
+A candidate binding should record:
 \begin{itemize}[leftmargin=*]
-  \item Code, configuration files, and environment specifications are versioned.
-  \item Data provenance and preprocessing are documented.
-  \item Random seeds and the number of repetitions are reported.
-  \item Hardware and software versions are recorded.
-  \item Primary metrics and statistical tests are defined before interpretation.
+  \item source probability and need confidence;
+  \item partially bound selector or arguments;
+  \item links to originating cognitive cells;
+  \item current cache key and source version;
+  \item external and cognitive refresh policies;
+  \item target fact, thought, and display regions.
 \end{itemize}
+
+\section{Conceptual Execution Traces}
+\label{app:traces}
+
+\subsection{Static copying}
+
+A user requests a response that must reproduce a value from a document exactly. The model forms a persistent need for the value and binds to a file reader. After the file is read once, the runtime caches the exact result. During subsequent denoising steps, the unchanged result is re-projected into the thought tensor, preserving salience while the display is reorganized. No repeated disk I/O is necessary, but the percept remains active until the exact value has been anchored in the display.
+
+\subsection{Dynamic display length}
+
+The current display length is an externally computed value that the model may read but cannot rewrite. A binding to the length monitor remains active during generation. At each update, the runtime supplies a refreshed value, which changes the thought tensor's plan and density decisions. The display can compress earlier text because the value conditions both current cognition and already generated output regions.
+
+\subsection{Streaming retrieval}
+
+A retrieval source first returns titles, then snippets, then complete passages. The binding remains active throughout the stream. Early chunks narrow hypotheses and refine the query; later chunks reopen unsupported conclusions and supply exact evidence. Unrelated display regions remain stable under local diffusion clocks.
+
+\section{Suggested Training Data Construction}
+\label{app:data}
+
+A practical initial dataset can be synthesized from ordinary question--answer pairs and documents:
+\begin{enumerate}[leftmargin=*]
+  \item identify answer spans that depend on external evidence;
+  \item remove those spans from the model-visible prompt;
+  \item create source descriptors and binding targets;
+  \item sample delayed or incremental arrival schedules;
+  \item construct pre-arrival thought states with unresolved cells;
+  \item construct post-arrival revisions grounded in the source;
+  \item add static-copy variants in which the same value must remain salient across many steps;
+  \item add dynamic variants in which the source changes before the final display converges.
+\end{enumerate}
+
+Teacher-generated textual reasoning may be encoded into initial cognitive cells, but training should randomize cell ordering and event schedules to avoid reducing the thought tensor to a disguised text chain.
+
+\section{Open Technical Questions}
+\label{app:questions}
+
+Several design decisions remain open:
+\begin{itemize}[leftmargin=*]
+  \item whether the thought tensor should use Gaussian diffusion, flow matching, or deterministic iterative refinement;
+  \item how many cognitive cells are required and whether cells should be created or retired dynamically;
+  \item whether display diffusion and thought diffusion should share a backbone;
+  \item how source descriptors support unseen tools;
+  \item how to estimate support and conflict for local noise updates;
+  \item how to preserve privacy while debugging latent bindings;
+  \item how to schedule model steps against external events under a wall-clock budget.
+\end{itemize}
+These questions are part of the CID research agenda rather than hidden implementation details.

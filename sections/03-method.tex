@@ -1,28 +1,206 @@
-\section{Method}
+\section{Continuous Interaction Diffusion}
 \label{sec:method}
 
-Describe the method in enough detail for an independent implementation. State inputs, outputs, invariants, computational costs, and failure conditions. \Cref{alg:method} gives a compact placeholder.
+\subsection{System state}
 
-\begin{algorithm}[t]
-  \caption{Placeholder procedure for \methodname}
-  \label{alg:method}
-  \begin{algorithmic}[1]
-    \Require Input $x$, parameters $\theta$, budget $B$
-    \Ensure Output $y$
-    \State Initialize state $s \gets \Call{Initialize}{x, \theta}$
-    \For{$t = 1, \ldots, B$}
-      \State $s \gets \Call{Update}{s, x, \theta}$
-    \EndFor
-    \State \Return $\Call{Decode}{s}$
-  \end{algorithmic}
-\end{algorithm}
-
-A useful objective may combine quality and cost:
+At diffusion update $s$, \cid maintains
 \begin{equation}
-  \theta^{\star}
-  = \argmin_{\theta}
-    \mathcal{L}(\theta; \mathcal{D})
-    + \lambda\,\mathcal{C}(\theta),
-  \label{eq:objective}
+  \mathcal{S}_s = (F_s, T_s, Y_s, \mathcal{B}_s, \mathcal{J}_s),
+  \label{eq:cid-state}
 \end{equation}
-where $\mathcal{C}$ measures computational or operational cost.
+where $F_s$ is the fact channel, $T_s$ the thought channel, $Y_s$ the display channel, $\mathcal{B}_s$ the active perceptual bindings, and $\mathcal{J}_s$ the set of in-flight external jobs. The model updates $T_s$ and $Y_s$; the environment and runtime update $F_s$, $\mathcal{B}_s$, and $\mathcal{J}_s$ under explicit permissions.
+
+\begin{figure*}[t]
+  \centering
+  \resizebox{0.96\textwidth}{!}{\input{figures/cid-overview}}
+  \caption{\cid separates protected external facts, mutable continuous cognition, and user-visible text while coupling them through a diffusion-native runtime. Repeated information needs create persistent perceptual bindings. Static results can be re-projected without repeated I/O; dynamic sources can be refreshed or streamed.}
+  \label{fig:cid-overview}
+\end{figure*}
+
+\subsection{Three coupled channels}
+
+\paragraph{Fact channel.}
+$F_s$ contains information whose value is controlled outside the generative state. The model can attend to it but cannot overwrite it. Importantly, this does not imply temporal immutability:
+\begin{equation}
+  F_{s+1} = \operatorname{ExternalUpdate}(F_s, e_{s+1}).
+  \label{eq:fact-update}
+\end{equation}
+A clock, system load, changing document, or user-updated constraint may therefore change between diffusion steps. The channel may contain user-pinned statements, exact values that must be quoted, authoritative tool results, and provenance metadata. Not every tool result must be promoted to $F_s$; ephemeral or low-value observations may remain in the runtime cache and enter cognition only through a temporary projection.
+
+Each fact item is represented as
+\begin{equation}
+  f_j = (v_j, \kappa_j, t_j, \nu_j, p_j),
+\end{equation}
+where $v_j$ is the value, $\kappa_j$ its source type, $t_j$ a timestamp, $\nu_j$ a version or freshness marker, and $p_j$ provenance. Fact-channel policy is an explicit runtime decision rather than an implicit consequence of tool execution.
+
+\paragraph{Thought channel.}
+$T_s \in \mathbb{R}^{N\times d}$ is a mutable cognitive field. It contains ordinary reasoning, hypotheses, unresolved information needs, tool intentions, tool-result interpretations, plans, constraints, and intermediate conclusions. Unlike a natural-language scratchpad, it does not require every internal state to be serialized as grammatical text. Unlike an untyped hidden-state cache, it exposes a stable model--runtime contract.
+
+\paragraph{Display channel.}
+$Y_s$ is a length-$L$ sequence over $\mathcal{V}\cup\{\textsc{mask}\}$ that converges to the user-visible output. It may be revised as $T_s$ changes. Display properties such as current length, remaining budget, formatting constraints, and citation coverage can be fed back into the thought channel, allowing the model to continuously adjust content rather than enforce such constraints only after generation.
+
+The model performs coupled updates
+\begin{align}
+  T_{s+1} &\sim D_T(T_s \mid F_s, Y_s, \mathcal{P}_s, \tau^T_s), \\
+  Y_{s+1} &\sim D_Y(Y_s \mid F_s, T_{s+1}, \tau^Y_s),
+  \label{eq:coupled-denoise}
+\end{align}
+where $\mathcal{P}_s$ denotes perceptual projections from active bindings and $\tau^T_s,\tau^Y_s$ are local noise schedules.
+
+\subsection{Typed Cognitive Tensor}
+\label{sec:tct}
+
+The thought channel is a \emph{Typed Cognitive Tensor} (\tct). Cognitive cell $i$ is
+\begin{equation}
+  c_{s,i} = (h_{s,i}, r_{s,i}, a_{s,i}, q_{s,i}, u_{s,i}, \tau_{s,i}, \ell_{s,i}),
+  \label{eq:cognitive-cell}
+\end{equation}
+with the following fields:
+\begin{itemize}[leftmargin=*]
+  \item $h_{s,i}\in\mathbb{R}^d$: continuous semantic content;
+  \item $r_{s,i}$: a soft role distribution, such as hypothesis, information need, percept, plan, constraint, or conclusion;
+  \item $a_{s,i}$: sparse symbolic anchors, including tool identifiers, entities, paths, numeric values, schema fields, or output spans;
+  \item $q_{s,i}$: links to fact items, bindings, or other cognitive cells;
+  \item $u_{s,i}$: epistemic or binding uncertainty;
+  \item $\tau_{s,i}$: a local diffusion level controlling editability;
+  \item $\ell_{s,i}$: lifecycle state, such as active, waiting, stable, or retired.
+\end{itemize}
+
+Roles are soft rather than mutually exclusive. A cell can simultaneously represent a hypothesis and the information need that would verify it. Sparse anchors prevent precise objects from drifting in a continuous latent space, while the continuous component preserves ambiguity and multiple competing interpretations.
+
+The local noise vector
+\begin{equation}
+  \boldsymbol{\tau}_s = (\tau_{s,1},\ldots,\tau_{s,N})
+\end{equation}
+allows different regions to evolve asynchronously. A supported conclusion may be nearly stable, an unresolved query may remain highly diffused, and a previously stable hypothesis may be reopened after a changing external fact arrives.
+
+\subsection{Latent information needs}
+
+Tool use is represented as a role within $T_s$, not as a separate text region. A model-side intent adapter reads the cognitive field and registered source descriptors $\mathcal{D}=\{d_m\}$:
+\begin{equation}
+  I_s = G_{\phi}(T_s, Y_s, \mathcal{D}).
+  \label{eq:intent-adapter}
+\end{equation}
+Each candidate need $i_k\in I_s$ contains
+\begin{equation}
+  i_k = (n_k, \pi_k, \alpha_k, \omega_k, \eta_k, \chi_k),
+\end{equation}
+where $n_k$ is a continuous need embedding, $\pi_k$ a distribution over registered sources or tools, $\alpha_k$ partially bound arguments, $\omega_k$ uncertainty, $\eta_k$ freshness or persistence demand, and $\chi_k$ links to affected cognitive or display regions.
+
+The adapter exposes a typed interface rather than arbitrary raw activations. This choice preserves early access to latent intent while insulating the runtime from model-specific hidden-state geometry. It also separates three stages that need not occur at the same diffusion step:
+\begin{equation}
+  \text{need emergence} \rightarrow
+  \text{source selection} \rightarrow
+  \text{argument binding}.
+\end{equation}
+For read-only tools, a binding may begin before every argument has reached textual certainty, provided the source accepts approximate or progressively refined selectors.
+
+\subsection{Persistent perceptual bindings}
+\label{sec:bindings}
+
+A conventional tool call is a transient request--response pair. CID instead creates a persistent perceptual binding
+\begin{equation}
+  b_j = (i_j, m_j, \alpha_j, \rho_j, z_j, \chi_j),
+  \label{eq:binding}
+\end{equation}
+where $i_j$ is the originating need, $m_j$ the source or tool, $\alpha_j$ current arguments, $\rho_j$ a refresh policy, $z_j$ runtime cache and version state, and $\chi_j$ the target cognitive regions.
+
+A binding remains active while the corresponding information need remains active. Repeated intent is therefore not automatically treated as a redundant model failure. It can mean that the model wants the percept to remain cognitively salient. The runtime distinguishes two operations:
+\begin{align}
+  \text{external refresh: }& v_j^{s+1} \leftarrow m_j(\alpha_j, s+1), \\
+  \text{cognitive refresh: }& P_j^{s+1} \leftarrow \Project(v_j, T_s, Y_s).
+  \label{eq:two-refreshes}
+\end{align}
+
+\paragraph{Static or unchanged source.}
+If the source version is unchanged, the runtime can reuse $v_j$ but recompute $P_j^{s+1}$. The same fact may therefore receive a different task-specific interpretation as cognition evolves. This supports copying and sustained reference: the source need not be re-read, yet its influence is renewed at each relevant denoising update.
+
+\paragraph{Changing source.}
+If the source is time-varying or streamable, $\rho_j$ may request polling, version checks, event subscriptions, or incremental chunks. An arriving value updates a fact item if policy marks it as protected, and always permits a new cognitive projection. Examples include current time, evolving display length, a modified file, sensor input, or streaming retrieval results.
+
+A simple refresh policy is
+\begin{equation}
+  \rho_j(s)=
+  \begin{cases}
+    \textsc{reproject}, & \nu_j(s)=\nu_j(s-1),\\
+    \textsc{refetch+reproject}, & \nu_j(s)\neq\nu_j(s-1),\\
+    \textsc{sleep}, & \Pr(i_j\text{ active})<\delta.
+  \end{cases}
+  \label{eq:refresh-policy}
+\end{equation}
+More advanced policies can trade information gain, latency, and tool cost.
+
+\subsection{Perceptual assimilation}
+
+A tool result is not merely appended to a prompt. The percept encoder creates a context-dependent projection
+\begin{equation}
+  P_j^s = E_{\psi}(v_j, p_j, T_s, Y_s),
+  \label{eq:percept-projection}
+\end{equation}
+whose interpretation depends on the current thought and display states. Projection cells carry source links to $v_j$ when provenance matters. The thought denoiser integrates them with gated cross-attention or residual updates:
+\begin{equation}
+  \widetilde{T}_s = T_s + \sum_{j\in\mathcal{B}_s} g_{j,s}\,A(T_s,P_j^s),
+  \label{eq:percept-assimilation}
+\end{equation}
+where $g_{j,s}$ is predicted from need persistence, relevance, and source freshness.
+
+New evidence may change the editability of existing cells. Let $\Delta_{j,i}$ estimate how strongly percept $j$ changes the posterior of cell $i$. The runtime or model updates
+\begin{equation}
+  \tau_{s+1,i} = \operatorname{clip}
+  \left(\tau_{s,i} + \lambda_{\mathrm{open}}\Delta^-_{j,i}
+  - \lambda_{\mathrm{close}}\Delta^+_{j,i}\right),
+  \label{eq:local-noise-update}
+\end{equation}
+where $\Delta^-_{j,i}$ measures conflict and $\Delta^+_{j,i}$ support. Conflicting regions become more diffused and revisable; supported regions stabilize. This generalizes token remasking to typed latent cognition and display regions.
+
+\subsection{Asynchronous runtime}
+
+\Cref{fig:cid-runtime} describes the runtime loop. Model denoising never blocks solely because a read-only operation is outstanding. The runtime continuously reads needs, manages bindings, receives events, and updates the model's external conditions.
+
+\begin{figure}[t]
+  \small
+  \hrule
+  \vspace{3pt}
+  \textbf{CID runtime for read-only perception}
+  \begin{enumerate}[leftmargin=*,label=\arabic*.,itemsep=1pt,topsep=3pt]
+    \item Initialize facts $F$, masked thought $T$, masked display $Y$, bindings $\mathcal{B}=\varnothing$, and jobs $\mathcal{J}=\varnothing$.
+    \item Run one coupled denoising step to update $(T,Y)$ and expose information needs $I$.
+    \item For each $i\in I$, match or create a binding, then update its arguments, persistence, and target links.
+    \item If a binding requires external refresh and no equivalent job is active, launch an asynchronous job; otherwise re-project its cached result.
+    \item Consume newly arrived events, update caches, optionally promote protected values into $F$, and project observations into $T$.
+    \item Adjust local noise using support/conflict impact, retire inactive bindings, and repeat until convergence or budget exhaustion.
+    \item Seal and return the display $Y$.
+  \end{enumerate}
+  \vspace{2pt}
+  \hrule
+  \caption{Reference CID runtime loop. External work and model denoising proceed concurrently.}
+  \label{fig:cid-runtime}
+\end{figure}
+
+The runtime deduplicates equivalent external work but does not suppress repeated perception. Two identical needs may share one cached value while each diffusion step obtains a fresh projection. A refined need can update an existing binding's selector, while an independent-verification need can establish a second source binding.
+
+\subsection{Training objective}
+\label{sec:training}
+
+CID requires a model trained for channel semantics and asynchronous events. A training trajectory contains a task $x$, protected facts $F$, tool/source descriptors $\mathcal{D}$, external event sequence $E=(e_1,\ldots,e_K)$ with arrival times, target thought structures $T^*$ or weak structural supervision, and final display $Y^*$.
+
+Training randomizes event arrival, source freshness, and cache state. Before a needed event arrives, the model should maintain uncertainty and expose a binding need rather than fabricate a value. After arrival, it should assimilate the percept, revise affected cells, preserve unrelated cognition, and update the display.
+
+A possible objective is
+\begin{align}
+  \mathcal{L} ={}& \mathcal{L}_{T}
+  + \lambda_Y\mathcal{L}_{Y}
+  + \lambda_I\mathcal{L}_{\mathrm{intent}}
+  + \lambda_B\mathcal{L}_{\mathrm{bind}} \notag\\
+  &+ \lambda_P\mathcal{L}_{\mathrm{assim}}
+  + \lambda_R\mathcal{L}_{\mathrm{refresh}}
+  + \lambda_G\mathcal{L}_{\mathrm{ground}}.
+  \label{eq:training-objective}
+\end{align}
+Here $\mathcal{L}_{T}$ is continuous denoising loss over cognitive cells; $\mathcal{L}_{Y}$ is masked-token denoising loss; $\mathcal{L}_{\mathrm{intent}}$ supervises need and source prediction; $\mathcal{L}_{\mathrm{bind}}$ supervises partial argument binding and lifecycle; $\mathcal{L}_{\mathrm{assim}}$ rewards correct revision after event arrival; $\mathcal{L}_{\mathrm{refresh}}$ distinguishes static re-projection from external re-fetching; and $\mathcal{L}_{\mathrm{ground}}$ aligns symbolic anchors and protected facts.
+
+Static-copy training examples repeatedly expose an unchanged source while the output is gradually composed. Dynamic-monitoring examples change the source during denoising and require the thought and display states to track the latest externally supplied value. Search and file-reading examples teach need emergence, partial query binding, delayed arrival, and evidence-conditioned revision.
+
+\subsection{Scope of the first system}
+
+The initial CID system should support only read-only sources: retrieval, file reads, databases, calculators, clocks, environment state, and streaming feeds. This restriction isolates the central question---whether sustained asynchronous perception can be integrated into a diffusion trajectory---from authorization, rollback, and irreversible action safety. Side-effecting tools require a separate commitment protocol and are left to future work.
