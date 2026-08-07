@@ -132,14 +132,10 @@ A retrieval source first returns titles, then snippets, then complete passages. 
 
 A practical initial dataset can be synthesized from ordinary question--answer pairs and documents:
 \begin{enumerate}[leftmargin=*]
-  \item identify answer spans that depend on external evidence;
-  \item remove those spans from the model-visible prompt;
-  \item create source descriptors and binding targets;
-  \item sample delayed or incremental arrival schedules;
-  \item construct pre-arrival thought states with unresolved cells;
-  \item construct post-arrival revisions grounded in the source;
-  \item add static-copy variants in which the same value must remain salient across many steps;
-  \item add dynamic variants in which the source changes before the final display converges.
+  \item identify answer spans that depend on external evidence and hide those spans from the model-visible prompt;
+  \item create source descriptors, binding targets, and delayed or incremental arrival schedules;
+  \item construct pre-arrival states with unresolved cells and post-arrival revisions grounded in the source;
+  \item add static-copy cases that preserve one value across many steps and dynamic cases in which the source changes before display convergence.
 \end{enumerate}
 
 Teacher-generated textual reasoning may be encoded into initial cognitive cells, but training should randomize cell ordering and event schedules to avoid reducing the thought tensor to a disguised text chain.
@@ -149,12 +145,9 @@ Teacher-generated textual reasoning may be encoded into initial cognitive cells,
 
 Several design decisions remain open:
 \begin{itemize}[leftmargin=*]
-  \item whether the thought tensor should use Gaussian diffusion, flow matching, or deterministic iterative refinement;
-  \item how many cognitive cells are required and whether cells should be created or retired dynamically;
-  \item whether display diffusion and thought diffusion should share a backbone;
-  \item how source descriptors support unseen tools;
-  \item how to estimate support and conflict for local noise updates;
-  \item how to preserve privacy while debugging latent bindings;
-  \item how to schedule model steps against external events under a wall-clock budget.
+  \item which iterative process should update the thought tensor, how many cells it needs, and whether cells should be created or retired dynamically;
+  \item whether display and thought diffusion should share a backbone and how source descriptors generalize to unseen tools;
+  \item how to estimate support and conflict for local reopening while preserving privacy during debugging;
+  \item how to schedule model updates and external events under a wall-clock budget.
 \end{itemize}
 These questions are part of the CID research agenda rather than hidden implementation details.

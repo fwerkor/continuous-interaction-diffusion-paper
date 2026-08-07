@@ -47,6 +47,16 @@ The model performs coupled updates
 \end{align}
 where $\mathcal{P}_s$ denotes perceptual projections from active bindings and $\tau^T_s,\tau^Y_s$ are local noise schedules.
 
+\subsection{Running example}
+
+Consider a user who asks the model to compare two recently released systems and cite exact latency numbers from their documentation. At the start of generation, the model can already organize parts of the answer that do not depend on retrieval: it may identify the comparison dimensions, reserve display regions for evidence, and keep the numerical claims unresolved. During the same denoising process, a region of $T_s$ can begin to represent a need for the latency specification of the first system. This need can become useful to the runtime before the model has produced a complete textual request such as a search query or JSON call.
+
+Once the intent adapter assigns sufficient probability to a registered documentation source and enough arguments are bound, the runtime creates a perceptual binding and launches the read asynchronously. Model denoising continues while the read is in flight. The thought state can refine the comparison plan, and the display state can develop stable material whose correctness does not depend on the missing number. Cells that depend on the unavailable evidence remain uncertain rather than being forced to guess a value merely because generation has advanced.
+
+Suppose the documentation then returns an exact latency of 37~ms. The runtime stores the returned value together with its provenance and version information. Policy may promote the exact value to the fact channel when it must be preserved verbatim. The percept encoder simultaneously constructs a projection conditioned on the current thought and display states. A numerical claim cell can become grounded in 37~ms, a tentative hypothesis that assumed a lower latency can reopen, and an already drafted comparison sentence can be revised during subsequent display denoising. These changes can occur within the same evolving trajectory because the observation conditions the current state rather than starting a separate reasoning turn.
+
+If the answer continues to rely on the same specification, the binding stays active. Later denoising updates can re-project the cached 37~ms value without reading the documentation again, preserving its cognitive influence while the surrounding argument changes. If the source is versioned and a newer document appears, the same binding can request an external refresh and assimilate the new value. When the information need becomes inactive and its dependent output is stable, the runtime retires the binding. This example separates four events that conventional tool interfaces often collapse into one textual call: the emergence of a need, binding to a source, arrival of an external value, and continued cognitive use of that value.
+
 \subsection{Typed Cognitive Tensor}
 \label{sec:tct}
 
