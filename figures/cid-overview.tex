@@ -3,23 +3,35 @@
   box/.style={draw, rounded corners=2pt, minimum height=1.0cm, align=center, inner sep=6pt},
   arrow/.style={-{Latex[length=2mm]}, thick},
   dashedarrow/.style={-{Latex[length=2mm]}, thick, dashed},
-  edgeLabel/.style={font=\scriptsize, fill=white, inner sep=1.5pt}
+  edgeLabel/.style={font=\scriptsize, inner sep=0pt}
 ]
   \node[box, fill=factfill, minimum width=4.2cm] (fact) {Fact channel $F$\\externally updated, model-read-only};
   \node[box, fill=thoughtfill, minimum width=4.9cm, right=2.0cm of fact] (thought) {Thought channel $T$\\Typed Cognitive Tensor};
   \node[box, fill=displayfill, minimum width=4.2cm, right=2.0cm of thought] (display) {Display channel $Y$\\user-visible token canvas};
 
-  \node[box, minimum width=4.2cm, below=1.55cm of fact] (tools) {Read-only sources\\search, files, state, calculators};
-  \node[box, fill=runtimefill, minimum width=4.9cm, below=1.55cm of thought] (runtime) {CID runtime\\intent readout, binding lifecycle, refresh};
+  \node[box, minimum width=4.2cm, below=1.8cm of fact] (tools) {Read-only sources\\search, files, state, calculators};
+  \node[box, fill=runtimefill, minimum width=4.9cm, below=1.8cm of thought] (runtime) {CID runtime\\intent readout, binding lifecycle, refresh};
 
-  \draw[arrow] (fact.east) -- node[edgeLabel, above] {protected conditioning} (thought.west);
-  \draw[arrow] (thought.east) -- node[edgeLabel, above] {semantic realization} (display.west);
-  \draw[arrow] (display.south west) to[bend right=24]
-    node[edgeLabel, below] {format and length feedback} (thought.south east);
+  \draw[arrow] (fact.east) -- (thought.west);
+  \node[edgeLabel, above=3pt] at ($(fact.east)!0.5!(thought.west)$) {protected conditioning};
 
-  \draw[arrow] (thought.south) -- node[edgeLabel, right] {latent needs} (runtime.north);
-  \draw[arrow] (runtime.west) -- node[edgeLabel, above] {bind / refresh} (tools.east);
-  \draw[arrow] (tools.north) -- node[edgeLabel, left] {external updates} (fact.south);
-  \draw[dashedarrow] (tools.north east) to[bend left=18]
-    node[edgeLabel, below right] {perceptual projections} (thought.south west);
+  \draw[arrow] (thought.east) -- (display.west);
+  \node[edgeLabel, above=3pt] at ($(thought.east)!0.5!(display.west)$) {semantic realization};
+
+  \draw[arrow] (display.north west) to[bend right=28] (thought.north east);
+  \node[edgeLabel] at ($(thought.north east)!0.5!(display.north west)+(0,0.62cm)$)
+    {format/length feedback};
+
+  \draw[arrow] (thought.south) -- (runtime.north);
+  \node[edgeLabel, right=4pt] at ($(thought.south)!0.5!(runtime.north)$) {latent needs};
+
+  \draw[arrow] (runtime.west) -- (tools.east);
+  \node[edgeLabel, above=3pt] at ($(runtime.west)!0.5!(tools.east)$) {bind / refresh};
+
+  \draw[arrow] (tools.north) -- (fact.south);
+  \node[edgeLabel, left=4pt] at ($(tools.north)!0.5!(fact.south)$) {external updates};
+
+  \draw[dashedarrow] (tools.north east) to[bend left=18] (thought.south west);
+  \node[edgeLabel] at ($(tools.north east)!0.58!(thought.south west)+(0.18cm,0.16cm)$)
+    {perceptual projections};
 \end{tikzpicture}

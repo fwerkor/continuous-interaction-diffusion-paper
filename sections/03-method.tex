@@ -89,9 +89,10 @@ where $n_k$ is a continuous need embedding, $\pi_k$ a distribution over register
 
 The adapter exposes a typed interface rather than arbitrary raw activations. This choice preserves early access to latent intent while insulating the runtime from model-specific hidden-state geometry. It also separates three stages that need not occur at the same diffusion step:
 \begin{equation}
-  \text{need emergence} \rightarrow
-  \text{source selection} \rightarrow
-  \text{argument binding}.
+  \begin{aligned}
+    \text{need emergence} &\rightarrow \text{source selection}\\
+                          &\rightarrow \text{argument binding}.
+  \end{aligned}
 \end{equation}
 For read-only tools, a binding may begin before every argument has reached textual certainty, provided the source accepts approximate or progressively refined selectors.
 
