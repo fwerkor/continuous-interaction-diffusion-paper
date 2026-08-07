@@ -1,3 +1,67 @@
+\section{Terminology}
+\label{app:terminology}
+
+The following definitions specify how potentially overloaded terms are used throughout this paper.
+
+\begin{description}[leftmargin=0pt,labelindent=0pt,itemsep=2pt,topsep=3pt]
+  \item[Autoregressive language model (AR LM).]
+  A language model that generates an output by predicting each next token from the input and the already generated prefix. Standard decoding advances left to right and treats earlier emitted tokens as fixed context.
+
+  \item[Diffusion language model (dLLM).]
+  A language model that generates through iterative denoising or refinement of a partially unknown or corrupted sequence. Depending on the architecture, several positions may be updated in one step and uncertain earlier positions may remain revisable.
+
+  \item[Denoising step / diffusion update.]
+  One iterative update of the diffusion state. A diffusion update can modify multiple positions or cognitive cells and is therefore distinct from generating one token in an AR model.
+
+  \item[Reopening / remasking.]
+  Increasing the editability of a previously predicted region so that later computation or newly arrived evidence can revise it. Remasking is one concrete token-level mechanism for reopening.
+
+  \item[Tool call.]
+  A discrete executable request to an external source, normally containing a tool or source identity and sufficiently bound arguments such as a query or structured JSON fields.
+
+  \item[Observation.]
+  Information returned by an external source or runtime event and made available to the model.
+
+  \item[Information need.]
+  A model state indicating that external information would be useful. In CID, such a need may become available to the runtime before it has converged into a complete serialized tool call.
+
+  \item[Perceptual binding.]
+  A persistent runtime relation connecting an information need to an external source, its current arguments, refresh policy, cached state, and affected cognitive regions.
+
+  \item[External refresh.]
+  Re-executing or re-reading an external source to obtain a potentially newer value. External refresh incurs external I/O or source computation.
+
+  \item[Cognitive refresh / re-projection.]
+  Recomputing how an already available external value should influence the current cognitive state, without repeating external I/O.
+
+  \item[Perceptual projection.]
+  A context-dependent model representation of an external value, constructed with respect to the current thought and display states and optionally linked to its provenance.
+
+  \item[Fact channel.]
+  Externally controlled information that the model may read but may not overwrite. Its contents can still change when the user, environment, runtime, or source updates them.
+
+  \item[Thought channel.]
+  The revisable internal cognitive state containing hypotheses, plans, information needs, percept interpretations, uncertainty, constraints, and intermediate conclusions.
+
+  \item[Display channel.]
+  The revisable token canvas that progressively converges to the user-visible response.
+
+  \item[Typed Cognitive Tensor (TCT).]
+  CID's structured continuous representation of the thought channel. Cognitive cells combine semantic vectors with typed roles, symbolic anchors, source links, uncertainty, local diffusion levels, and lifecycle state.
+
+  \item[Local diffusion level.]
+  A per-region value controlling how revisable that region currently is. Higher diffusion permits stronger revision; lower diffusion represents a more stable region.
+
+  \item[Persistent perception.]
+  The maintenance of an information source's cognitive influence while the corresponding need remains active. Persistence may reuse a static cached value or refresh a changing source according to policy.
+
+  \item[Static and dynamic sources.]
+  A static source is treated as unchanged while a binding is active, allowing repeated cognitive refresh from a cached value. A dynamic source can change over time and may require polling, version checks, subscriptions, or streaming updates.
+
+  \item[Binding lifecycle.]
+  The runtime state of a perceptual binding as it moves through stages such as \textsc{candidate}, \textsc{active}, \textsc{waiting}, \textsc{available}, \textsc{refreshing}, and \textsc{retired}.
+\end{description}
+
 \section{Reference Runtime Interface}
 \label{app:runtime-interface}
 
