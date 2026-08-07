@@ -6,7 +6,8 @@ A read-only source registered with a CID runtime may expose the following concep
 \begin{verbatim}
 source:
   name: document_search
-  description: retrieve passages from a corpus
+  description: >-
+    retrieve passages from a corpus
   input_schema:
     query: text
     scope: optional identifier
@@ -32,8 +33,8 @@ A perceptual binding can use the following lifecycle:
   \textsc{candidate} &\rightarrow \textsc{active}
   \rightarrow \textsc{waiting} \notag\\
   &\rightarrow \textsc{available}
-  \rightarrow \textsc{refreshing}
-  \rightarrow \textsc{retired}.
+  \rightarrow \textsc{refreshing} \notag\\
+  &\rightarrow \textsc{retired}.
 \end{align}
 A binding can move from \textsc{available} directly back to \textsc{active} when the value is unchanged and only cognitive re-projection is required. It moves to \textsc{refreshing} when the need remains active and the source freshness policy requires external work.
 
