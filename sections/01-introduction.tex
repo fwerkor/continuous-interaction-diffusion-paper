@@ -13,7 +13,7 @@ We propose \emph{Continuous Interaction Diffusion} (\cid), a diffusion-native ar
 
 CID separates the system state into three coupled channels. The \emph{fact channel} contains information controlled outside the generative state, such as user-pinned constraints or authoritative external values; the model may read these facts but cannot overwrite them. The \emph{thought channel} contains hypotheses, plans, unresolved information needs, tool intentions, interpretations, uncertainty, and intermediate conclusions. We represent it as a \emph{Typed Cognitive Tensor} (\tct), a continuous locally diffused structure augmented with role distributions, symbolic anchors, source links, uncertainty, and per-cell noise levels. The \emph{display channel} is the evolving token canvas that converges to the user-visible response. These channels can change together while obeying different representations and write permissions.
 
-This paper presents an architectural proposal and makes the design precise enough to implement and falsify. Its contributions are:
+This paper formalizes the architecture and makes the design precise enough to implement and falsify. Its contributions are:
 \begin{itemize}[leftmargin=*]
   \item We formulate the mismatch between turn-based tool protocols and continuously revisable diffusion generation, and define continuous tool interaction as a model--runtime problem.
   \item We introduce a three-channel architecture with an externally controlled fact channel, a typed continuous thought channel, and a discrete display channel.
@@ -21,4 +21,4 @@ This paper presents an architectural proposal and makes the design precise enoug
   \item We specify an asynchronous runtime, local diffusion clocks, model-side intent interface, training objectives, and a concrete evaluation protocol for read-only tools.
 \end{itemize}
 
-The remainder of the paper reviews the necessary background and derives the design requirements in \cref{sec:background}, formalizes \cid in \cref{sec:method}, outlines an empirical research agenda in \cref{sec:experiments}, relates the proposal to prior work in \cref{sec:related-work}, and discusses limitations in \cref{sec:discussion}.
+The remainder of the paper reviews the necessary background and derives the design requirements in \cref{sec:background}, formalizes \cid in \cref{sec:method}, specifies an empirical evaluation protocol in \cref{sec:experiments}, relates the architecture to prior work in \cref{sec:related-work}, and discusses limitations in \cref{sec:discussion}.

@@ -34,7 +34,7 @@ Each fact item is represented as
 where $v_j$ is the value, $\kappa_j$ its source type, $t_j$ a timestamp, $\nu_j$ a version or freshness marker, and $p_j$ provenance. Fact-channel policy is an explicit runtime decision rather than an implicit consequence of tool execution.
 
 \paragraph{Thought channel.}
-$T_s \in \mathbb{R}^{N\times d}$ is a mutable cognitive field. It contains ordinary reasoning, hypotheses, unresolved information needs, tool intentions, tool-result interpretations, plans, constraints, and intermediate conclusions. Unlike a natural-language scratchpad, it does not require every internal state to be serialized as grammatical text. Unlike an untyped hidden-state cache, it exposes a stable model--runtime contract.
+The thought channel is a structured cognitive field $T_s=(c_{s,1},\ldots,c_{s,N})$, with semantic matrix $H_s\in\mathbb{R}^{N\times d}$ whose row $i$ is $h_{s,i}$. It contains reasoning, hypotheses, information needs, tool intentions, percept interpretations, plans, constraints, and conclusions. Unlike text scratchpads or untyped hidden caches, it exposes structured mutable state through a stable model--runtime contract.
 
 \paragraph{Display channel.}
 $Y_s$ is a length-$L$ sequence over $\mathcal{V}\cup\{\textsc{mask}\}$ that converges to the user-visible output. It may be revised as $T_s$ changes. Display properties such as current length, remaining budget, formatting constraints, and citation coverage can be fed back into the thought channel, allowing the model to continuously adjust content rather than enforce such constraints only after generation.

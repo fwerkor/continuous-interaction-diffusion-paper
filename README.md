@@ -12,7 +12,7 @@ The current preprint focuses on read-only tools and formalizes:
 - distinct policies for re-projecting static results and refreshing changing sources;
 - asynchronous runtime transitions, training objectives, and a falsifiable evaluation protocol.
 
-The manuscript is currently an architectural proposal and does not claim experimental results.
+The manuscript formalizes the architecture and does not claim empirical performance results.
 
 ## Build
 

@@ -2,7 +2,7 @@
 \label{sec:discussion}
 
 \paragraph{Architectural complexity.}
-CID adds a continuous thought representation, a typed intent adapter, binding state, event scheduling, and local diffusion control. The proposal is justified only if these components yield benefits unavailable to a simpler asynchronous autoregressive agent. The evaluation in \cref{sec:experiments} therefore treats the AR comparison as a central falsification test.
+CID adds a continuous thought representation, a typed intent adapter, binding state, event scheduling, and local diffusion control. These components are justified only if they yield benefits unavailable to a simpler asynchronous autoregressive agent. The evaluation in \cref{sec:experiments} therefore treats the AR comparison as a central falsification test.
 
 \paragraph{Supervision for cognition.}
 High-quality targets for typed cognitive cells and binding lifecycles are not naturally available. Possible strategies include distillation from textual reasoning and tool trajectories, weak supervision from source dependencies, synthetic event schedules, and end-to-end learning with auxiliary consistency losses. Each may bias the internal representation toward the teacher or task generator.
@@ -23,7 +23,7 @@ A latent thought channel may contain sensitive source-derived information even w
 This paper intentionally excludes side-effecting tools. Persistent perception is substantially easier to manage than persistent action. Writes require commitment, authorization, idempotency, rollback, and user confirmation mechanisms that should not be conflated with the first demonstration of continuous perception.
 
 \paragraph{Human cognition analogy.}
-Sustained perception and repeated cognitive refresh are useful design analogies, not claims that CID models the human brain. The proposal should be evaluated as a computational architecture on measurable quality, latency, and revision behavior.
+Sustained perception and repeated cognitive refresh are useful design analogies, not claims that CID models the human brain. CID should be evaluated as a computational architecture on measurable quality, latency, and revision behavior.
 
 \paragraph{Multimodal extension.}
 Although this paper is limited to language and read-only software tools, the separation between externally controlled facts, continuous typed cognition, and display naturally admits visual, audio, and sensor streams. Continuous latent diffusion may provide a shared mechanism for such modalities \citep{guo2026coladlm}, but multimodal training and alignment are future work.
