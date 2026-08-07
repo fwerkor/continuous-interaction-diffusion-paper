@@ -30,7 +30,7 @@
     {format/length feedback};
 
   \draw[arrow] (thought.south) -- (runtime.north);
-  \node[edgeLabel] at ($(thought.south)!0.5!(runtime.north)+(0.74cm,0)$)
+  \node[edgeLabel, anchor=west] at ($(thought.south)!0.5!(runtime.north)+(0.30cm,0)$)
     {latent needs};
 
   \draw[arrow] (runtime.west) -- (tools.east);
@@ -38,11 +38,13 @@
     {bind / refresh};
 
   \draw[arrow] (tools.north) -- (fact.south);
-  \node[edgeLabel] at ($(tools.north)!0.5!(fact.south)+(-0.88cm,0)$)
+  \node[edgeLabel, anchor=east] at ($(tools.north)!0.5!(fact.south)+(-0.30cm,0)$)
     {external updates};
 
-  \draw[dashedarrow] (tools.north east)
-    .. controls (-3.35,-2.45) and (-2.75,-1.55) .. (thought.south west);
-  \node[edgeLabel] at (-3.05,-1.36)
+  % Make the read-only-source origin explicit before curving toward thought.
+  \draw[dashedarrow] ($(tools.north)+(1.05cm,0)$)
+    -- ++(0,0.42cm)
+    .. controls (-4.30,-2.15) and (-3.20,-1.22) .. (thought.south west);
+  \node[edgeLabel, anchor=west] at (-2.95,-1.62)
     {perceptual projections};
 \end{tikzpicture}
