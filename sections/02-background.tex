@@ -18,7 +18,7 @@ Conventional tool use inherits this structure. Let $q$ be a user request, $r_k$ 
   \rightarrow r_2 \rightarrow a_2 \rightarrow o_2 \rightarrow y.
   \label{eq:turn-based}
 \end{equation}
-For example, a model answering a question about a document may first generate a request such as \texttt{search(query=...)}, stop or yield control while the request is executed, receive passages as new context, and then continue its answer. ReAct explicitly alternates reasoning and actions \citep{yao2022react}; Toolformer represents API calls inside token sequences and trains the model to decide when they are useful \citep{schick2023toolformer}.
+For example, a model answering a question about a document may first generate a request such as \texttt{search(query=\ldots)}, stop or yield control while the request is executed, receive passages as new context, and then continue its answer. ReAct explicitly alternates reasoning and actions \citep{yao2022react}; Toolformer represents API calls inside token sequences and trains the model to decide when they are useful \citep{schick2023toolformer}.
 
 This call--observe pattern is effective because an external result can simply be appended after everything the AR model has already generated. The model then conditions future tokens on the new observation. The same interface also creates a strong commitment boundary: information that arrives later naturally influences future generation, while revising already committed reasoning or output requires an additional mechanism such as regeneration, editing, or a new conversational turn.
 
