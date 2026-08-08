@@ -3,6 +3,12 @@
 
 CID is designed around two practical goals: improve task quality by allowing external evidence to correct uncertain or stale model state as soon as it becomes available, and improve end-to-end efficiency by overlapping external work with useful denoising while avoiding duplicate tool execution and unnecessary recomputation. The architecture follows from three corresponding requirements. First, exact externally supplied information must remain stable even while model cognition is revised. Second, an information need should become actionable before the model has fully serialized a textual or JSON tool call, so external latency can start earlier. Third, once a result has arrived, the model should be able to keep using or reinterpret it without repeatedly executing the same external operation. The components below implement these requirements jointly rather than treating tool use as a separate pause between generation rounds.
 
+\begin{figure*}[t!]
+  \centering
+  \input{figures/cid-overview}
+  \caption{\cid separates protected external facts, mutable continuous cognition, and user-visible text while coupling them through a diffusion-native runtime. Repeated information needs create persistent perceptual bindings. Static results can be re-projected without repeated I/O; dynamic sources can be refreshed or streamed.}
+  \label{fig:cid-overview}
+\end{figure*}
 
 At diffusion update $s$, \cid maintains
 \begin{equation}
@@ -33,13 +39,6 @@ Table~\ref{tab:cid-mechanisms} summarizes the six mechanisms that implement this
     \bottomrule
   \end{tabular}
 \end{table}
-
-\begin{figure*}[t]
-  \centering
-  \input{figures/cid-overview}
-  \caption{\cid separates protected external facts, mutable continuous cognition, and user-visible text while coupling them through a diffusion-native runtime. Repeated information needs create persistent perceptual bindings. Static results can be re-projected without repeated I/O; dynamic sources can be refreshed or streamed.}
-  \label{fig:cid-overview}
-\end{figure*}
 
 \paragraph{Running example.}
 
