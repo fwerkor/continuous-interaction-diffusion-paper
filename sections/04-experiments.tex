@@ -3,38 +3,38 @@
 
 This paper does not claim empirical performance results. We specify the minimum evidence required to support or reject the CID hypothesis and define how the complete model--runtime system should be evaluated beyond token-generation speed.
 
-\subsection{Research questions}
+\subsection{Research Questions}
 
-\paragraph{RQ1: Do useful information needs emerge before explicit calls?}
+\paragraph{RQ1: Do Useful Information Needs Emerge Before Explicit Calls?}
 Measure the earliest diffusion step at which the typed intent interface correctly identifies source type and information target. Compare it with the step at which a valid textual or JSON call becomes executable. CID is useful only if latent need detection provides a meaningful lead without excessive false bindings.
 
-\paragraph{RQ2: Can persistent bindings hide external latency?}
+\paragraph{RQ2: Can Persistent Bindings Hide External Latency?}
 Vary source latency while holding model compute fixed. Measure whether the model uses waiting time to develop cognition and display structure that remains useful after the observation arrives. The central comparison is end-to-end latency at matched answer quality.
 
-\paragraph{RQ3: Does repeated perception improve assimilation?}
+\paragraph{RQ3: Does Repeated Perception Improve Assimilation?}
 For static sources, compare one-time injection with per-step cognitive re-projection. For dynamic sources, compare no refresh, fixed polling, and need-conditioned refresh. Tasks should test exact copying, evidence application, stale-value avoidance, and revision of already formed output.
 
-\paragraph{RQ4: Is the Typed Cognitive Tensor necessary?}
+\paragraph{RQ4: Is the Typed Cognitive Tensor Necessary?}
 Compare (i) a natural-language thought string, (ii) an untyped continuous latent tensor, and (iii) the proposed \tct. The expected benefit of typing is not merely accuracy but stable source binding, precise symbolic references, local revision, and inspectable runtime control.
 
-\paragraph{RQ5: Is diffusion essential?}
+\paragraph{RQ5: Is Diffusion Essential?}
 Compare CID against an asynchronous autoregressive model with the same sources, training data, and approximate compute budget. A convincing result must show a benefit from revising prior cognition or display regions, rather than from asynchronous I/O alone.
 
-\subsection{Task families}
+\subsection{Task Families}
 
-\paragraph{Static reference and copying.}
+\paragraph{Static Reference and Copying.}
 The model reads a fixed document, table, or code fragment and must repeatedly preserve exact values while composing a longer response. This directly tests the distinction between repeated external execution and repeated cognitive refresh.
 
-\paragraph{Dynamic state tracking.}
+\paragraph{Dynamic State Tracking.}
 A source changes during generation: current time, a key--value entry, a file version, remaining token budget, or display length. The final output must reflect the latest value and revise stale intermediate conclusions.
 
-\paragraph{Delayed retrieval.}
+\paragraph{Delayed Retrieval.}
 Question answering tasks provide a retriever whose results arrive after controlled delays. Some answer regions can be prepared without evidence; others must remain unresolved until retrieval arrives.
 
-\paragraph{Streaming evidence.}
+\paragraph{Streaming Evidence.}
 A source emits increasingly informative chunks. The model should revise hypotheses incrementally instead of waiting for the complete result or restarting generation after every chunk.
 
-\paragraph{Competing sources.}
+\paragraph{Competing Sources.}
 Multiple bindings expose complementary or conflicting facts. This setting tests source links, uncertainty, repeated verification, and local reopening of cognition.
 
 \subsection{Baselines}
@@ -53,10 +53,10 @@ A minimal comparison should include:
 
 \subsection{Metrics}
 
-\paragraph{Task quality.}
+\paragraph{Task Quality.}
 Use exact match, factual accuracy, evidence support, copying fidelity, and task-specific correctness. For dynamic sources, report stale-value rate.
 
-\paragraph{Interaction latency.}
+\paragraph{Interaction Latency.}
 Report wall-clock latency, tool-wait overlap, and \emph{intent lead time}
 \begin{equation}
   \Delta_{\mathrm{lead}} = t_{\mathrm{explicit\ call}} - t_{\mathrm{binding}}.
@@ -69,16 +69,16 @@ Define observation assimilation lag as
 \end{equation}
 Also measure the number and fraction of thought and display regions revised after arrival.
 
-\paragraph{Binding behavior.}
+\paragraph{Binding Behavior.}
 Report binding precision and recall, persistence duration, external refresh count, cache-hit rate, repeated cognitive projection count, and the fraction of duplicate needs handled without duplicate I/O.
 
-\paragraph{Revision quality.}
+\paragraph{Revision Quality.}
 Measure the ratio of corrected errors to newly introduced errors, preservation of unaffected content, and the compute cost of local reopening. These metrics test whether diffusion revision is selective rather than destructive.
 
-\subsection{Key ablations}
+\subsection{Key Ablations}
 
 A full evaluation should remove role typing, symbolic anchors, source links, per-cell noise levels, persistent bindings, static re-projection, dynamic source refresh, and display-to-thought feedback. Arrival-time randomization during training should also be ablated to determine whether the system learns genuine asynchronous assimilation or overfits a fixed event schedule.
 
-\subsection{Falsification criteria}
+\subsection{Falsification Criteria}
 
 CID would not be supported if latent bindings do not reliably precede explicit calls, if post-arrival revision destroys more correct state than it repairs, if waiting-time computation is mostly discarded, or if an asynchronous autoregressive baseline matches quality and latency with lower complexity. These outcomes should be treated as substantive negative results rather than implementation details.

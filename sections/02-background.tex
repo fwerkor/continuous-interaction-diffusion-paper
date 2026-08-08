@@ -3,7 +3,7 @@
 
 CID connects ideas from language-model generation, tool-augmented agents, diffusion models, and continuous latent reasoning. This section introduces the parts of those areas needed to understand the design. We focus on how information enters the model over time, which parts of the model state can still be revised, and how external observations are represented.
 
-\subsection{Autoregressive generation and turn-based tool use}
+\subsection{Autoregressive Generation and Turn-Based Tool Use}
 
 Most deployed language models are autoregressive (AR). Given an input context $x$ and an output sequence $y=(y_1,\ldots,y_L)$, an AR model factorizes generation as
 \begin{equation}
@@ -24,7 +24,7 @@ This call--observe pattern is effective because an external result can simply be
 
 Tool requests are also usually \emph{serialized}. Before execution, the system needs a sufficiently concrete action containing a tool identity and arguments, often expressed as JSON or another schema-constrained structure. An internal sense that ``more evidence about this entity is needed'' does not by itself initiate I/O; it must first become an executable request. This distinction between an emerging information need and a fully specified call is central to CID.
 
-\subsection{Asynchronous tool interaction}
+\subsection{Asynchronous Tool Interaction}
 
 A tool call need not block the entire software runtime. Event-driven agents can launch external work asynchronously, continue other computation, and handle results when they arrive \citep{ginart2024asynchronous}. Speculative tool calling can start likely requests before the surrounding generation is complete, and streaming systems can overlap model computation with incoming observations \citep{hooper2026realtime}. These techniques reduce idle wall-clock time.
 
@@ -32,7 +32,7 @@ However, asynchronous execution alone does not change the model's representation
 
 It is therefore useful to separate two questions. The first is \emph{when external work executes}: synchronously or asynchronously. The second is \emph{how the model represents an ongoing need for external information}. CID primarily changes the second interface and then uses asynchronous execution to support it.
 
-\subsection{Diffusion language models}
+\subsection{Diffusion Language Models}
 
 Diffusion language models (dLLMs) generate with iterative refinement instead of strict next-token prediction. The exact formulation varies across models, but masked diffusion provides a useful concrete example. Starting from a clean token sequence $x_0$, a forward corruption process progressively replaces tokens with a mask symbol or otherwise removes information, producing increasingly corrupted states $x_t$. A learned reverse process receives a corrupted state and predicts cleaner token assignments. At generation time, the model starts from a highly masked sequence and applies multiple denoising updates until a complete sequence is obtained.
 
@@ -42,7 +42,7 @@ The important property for this paper is \emph{revisability}. Consider a partial
 
 This does not imply that every dLLM automatically supports arbitrary editing, perfect parallelism, or efficient tool use. Different dLLM architectures impose different masking schedules, block structures, and decoding constraints. CID relies only on the broader capability that some regions of the generative state can remain revisable across iterative updates. The architecture then asks how external information should enter such a state while it is still evolving.
 
-\subsection{Why the conventional tool interface underuses diffusion}
+\subsection{Why the Conventional Tool Interface Underuses Diffusion}
 
 Suppose a model is drafting an answer while a search request is running. Before the search result arrives, it may have formed a tentative hypothesis, reserved an output span for evidence, and identified a second question whose relevance depends on the first result. When the result arrives, three kinds of change may be useful simultaneously: revise the hypothesis, update the remaining information needs, and modify an earlier part of the displayed answer.
 
@@ -50,7 +50,7 @@ A turn-based interface represents the same event as a new observation appended a
 
 Existing evaluations also indicate that simply replacing an AR backbone with a dLLM does not automatically produce a strong agent. Current dLLMs can struggle with exact tool schemas and temporally ordered feedback in conventional workflows \citep{lu2026bitterlesson}. A diffusion-native agent interface therefore needs to preserve precise symbolic grounding while giving the runtime access to information needs and revisable state before they become ordinary text.
 
-\subsection{Continuous latent reasoning}
+\subsection{Continuous Latent Reasoning}
 
 A related line of work questions whether every intermediate reasoning state must be expressed as natural-language tokens. Textual chains of thought are convenient because they are readable and can be processed by the same language model, but they force intermediate computation through a discrete linguistic representation. Ambiguous hypotheses, multiple possible continuations, or partially formed plans must all be serialized into words before the next reasoning step can use them.
 
@@ -58,24 +58,24 @@ Continuous latent reasoning keeps some intermediate computation in vector-valued
 
 For tool interaction, however, an unrestricted latent tensor is not enough. The runtime must know whether a latent region represents a hypothesis, an unresolved information need, a source-derived percept, or a stable conclusion. It must also retain exact objects such as file paths, numbers, entity identifiers, source versions, and tool-schema fields. CID therefore combines continuous semantic content with typed roles, symbolic anchors, source links, uncertainty, and local diffusion state.
 
-\subsection{Design requirements}
+\subsection{Design Requirements}
 
 The preceding background yields six requirements for a diffusion-native interaction architecture.
 
-\paragraph{Continuous evolution.}
+\paragraph{Continuous Evolution.}
 Reasoning and display generation should continue while read-only external operations are in flight. When a result arrives, it should condition the current trajectory directly, without requiring the system to restart reasoning as a separate model turn.
 
-\paragraph{Early, non-linguistic intent.}
+\paragraph{Early, Non-Linguistic Intent.}
 A coarse information need should become usable before a complete tool name, query string, or JSON object has converged. Tool identity has been shown to be linearly readable from internal activations in autoregressive models \citep{wu2026toolreadable}, suggesting that a trained model-side interface can expose typed intent before full textual serialization.
 
-\paragraph{Persistent perception.}
+\paragraph{Persistent Perception.}
 An information need may remain relevant across many model updates. The system should represent this persistence explicitly. For a static source, the same external value can remain active without repeated I/O. For a changing source, the binding can request refreshed values or consume a stream.
 
-\paragraph{Externally controlled facts.}
+\paragraph{Externally Controlled Facts.}
 Some values must remain outside the model's write authority, including user-pinned constraints, exact source values, and runtime-maintained state. Such values can still change when their external source changes. Read-only therefore describes the model's permission over the value, not whether the value is constant over time.
 
-\paragraph{Joint revision.}
+\paragraph{Joint Revision.}
 New observations should be able to affect several thought and display regions in one evolving state. The system needs selective reopening so conflicting evidence can make relevant regions revisable while unrelated, well-supported content remains stable.
 
-\paragraph{Precise symbolic grounding.}
+\paragraph{Precise Symbolic Grounding.}
 Continuous representations must remain connected to exact external objects. Paths, numbers, entity identifiers, tool schemas, source versions, and provenance should be preserved through symbolic anchors and explicit source links instead of relying on latent similarity alone.

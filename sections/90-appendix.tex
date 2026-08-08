@@ -115,15 +115,15 @@ A candidate binding should record:
 \section{Conceptual Execution Traces}
 \label{app:traces}
 
-\subsection{Static copying}
+\subsection{Static Copying}
 
 A user requests a response that must reproduce a value from a document exactly. The model forms a persistent need for the value and binds to a file reader. After the file is read once, the runtime caches the exact result. During subsequent denoising steps, the unchanged result is re-projected into the thought tensor, preserving salience while the display is reorganized. No repeated disk I/O is necessary, but the percept remains active until the exact value has been anchored in the display.
 
-\subsection{Dynamic display length}
+\subsection{Dynamic Display Length}
 
 The current display length is an externally computed value that the model may read but cannot rewrite. A binding to the length monitor remains active during generation. At each update, the runtime supplies a refreshed value, which changes the thought tensor's plan and density decisions. The display can compress earlier text because the value conditions both current cognition and already generated output regions.
 
-\subsection{Streaming retrieval}
+\subsection{Streaming Retrieval}
 
 A retrieval source first returns titles, then snippets, then complete passages. The binding remains active throughout the stream. Early chunks narrow hypotheses and refine the query; later chunks reopen unsupported conclusions and supply exact evidence. Unrelated display regions remain stable under local diffusion clocks.
 

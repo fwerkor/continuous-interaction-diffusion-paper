@@ -1,17 +1,17 @@
 \section{Related Work}
 \label{sec:related-work}
 
-\paragraph{Diffusion language models.}
+\paragraph{Diffusion Language Models.}
 Early text diffusion work established both continuous and discrete formulations. Diffusion-LM denoises continuous word-vector representations \citep{li2022diffusionlm}, while D3PM develops structured corruption processes for discrete state spaces \citep{austin2021d3pm}. DiffuSeq extends diffusion to conditional sequence-to-sequence text generation \citep{gong2022diffuseq}. Masked diffusion language modeling later showed that a comparatively simple objective can approach autoregressive perplexity \citep{sahoo2024mdlm}. More recent systems scale these ideas toward general-purpose language modeling: LLaDA establishes masked diffusion at large-model scale \citep{nie2025llada}; Block Diffusion interpolates between blockwise autoregression and parallel diffusion \citep{arriola2025blockdiffusion}; and Dream demonstrates flexible decoding order \citep{ye2025dream}. Planned Diffusion partitions output into parallel spans \citep{israel2025planned}, while RemeDi reopens low-confidence tokens during decoding \citep{huang2025remedi}. CID focuses on asynchronous external events as persistent conditions on a jointly revisable cognitive and display state.
 
-\paragraph{Tool-using language models.}
+\paragraph{Tool-Using Language Models.}
 ReAct alternates explicit reasoning and actions \citep{yao2022react}, and Toolformer trains API calls as token sequences \citep{schick2023toolformer}. These methods established tool-augmented reasoning while retaining serialized action boundaries. Asynchronous Tool Usage introduces an event-driven architecture for real-time agents \citep{ginart2024asynchronous}; later work combines asynchronous I/O with speculative calls and streaming-input training \citep{hooper2026realtime}. CID shares the objective of overlapping cognition and I/O, while moving persistent percept state into the model--runtime interface and permitting external events to revise earlier internal and displayed content.
 
-\paragraph{Diffusion agents.}
+\paragraph{Diffusion Agents.}
 DLLM-Searcher trains a dLLM search agent and proposes P-ReAct, which prioritizes decoding a tool-call region so reasoning can continue while search runs \citep{zhao2026dllmsearcher}. This is the closest existing system to CID's latency motivation. CID removes the requirement that every information need first converge into an explicit call region and generalizes a call into a sustained binding with repeated projection or refresh. Evaluations of current dLLMs in agent workflows find weaknesses in strict tool schemas and temporal feedback, while observing stronger performance in non-causal roles such as selection and summarization \citep{lu2026bitterlesson}. CID's typed latent interface and separation between continuous thought and symbolic anchors are intended to address this mismatch, though empirical validation remains necessary.
 
-\paragraph{Latent and diffusion-based reasoning.}
+\paragraph{Latent and Diffusion-Based Reasoning.}
 Coconut feeds continuous reasoning states back into an autoregressive model and argues that latent states can represent multiple possible reasoning continuations \citep{hao2024coconut}. Diffusion of Thoughts applies diffusion generation to chains of thought \citep{ye2024dot}. LaDiR constructs structured latent thought blocks and denoises them with latent diffusion \citep{kang2025ladir}. Continuous latent diffusion language models further separate global semantic organization from textual realization \citep{guo2026coladlm}. CID builds on the general case for non-textual intermediate cognition, but introduces typed cells, external source links, persistent perceptual bindings, and a separate display diffusion process.
 
-\paragraph{Internal tool intent.}
+\paragraph{Internal Tool Intent.}
 Recent probing work reports that tool identity can be read and steered from internal activations before a complete call is emitted \citep{wu2026toolreadable}. This supports the feasibility of latent intent readout. CID does not expose arbitrary hidden states directly; it requires a trained, typed adapter whose output is part of the model contract and whose uncertainty can be used by the runtime.

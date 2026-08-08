@@ -29,7 +29,7 @@ Table~\ref{tab:cid-mechanisms} maps the six design requirements in Section~2.6 t
   \label{tab:cid-mechanisms}
   \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.27\columnwidth}>{\raggedright\arraybackslash}p{0.29\columnwidth}>{\raggedright\arraybackslash}p{0.38\columnwidth}@{}}
     \toprule
-    Design requirement & CID mechanism & Effect \\
+    Design Requirement & CID Mechanism & Effect \\
     \midrule
     Continuous evolution & Asynchronous runtime & Reasoning and display generation continue while read-only external operations are in flight. \\
     Early, non-linguistic intent & Latent information needs & An information need becomes usable before a complete tool name, query string, or JSON object has converged. \\
@@ -41,7 +41,7 @@ Table~\ref{tab:cid-mechanisms} maps the six design requirements in Section~2.6 t
   \end{tabular}
 \end{table}
 
-\paragraph{Running example.}
+\paragraph{Running Example.}
 
 Consider a user who asks the model to compare two recently released systems and cite exact latency numbers from their documentation. At the start of generation, the model can already organize parts of the answer that do not depend on retrieval: it may identify the comparison dimensions, reserve display regions for evidence, and keep the numerical claims unresolved. During the same denoising process, a region of $T_s$ can begin to represent a need for the latency specification of the first system. This need can become useful to the runtime before the model has produced a complete textual request such as a search query or JSON call.
 
@@ -51,10 +51,10 @@ Suppose the documentation then returns an exact latency of 37~ms. The runtime st
 
 If the answer continues to rely on the same specification, the binding stays active. Later denoising updates can re-project the cached 37~ms value without reading the documentation again, preserving its cognitive influence while the surrounding argument changes. If the source is versioned and a newer document appears, the same binding can request an external refresh and assimilate the new value. When the information need becomes inactive and its dependent output is stable, the runtime retires the binding. This example separates four events that conventional tool interfaces often collapse into one textual call: the emergence of a need, binding to a source, arrival of an external value, and continued cognitive use of that value.
 
-\subsection{Three coupled channels}
+\subsection{Three Coupled Channels}
 \label{sec:channels}
 
-\paragraph{Fact channel.}
+\paragraph{Fact Channel.}
 $F_s$ contains information whose value is controlled outside the generative state. The model can attend to it but cannot overwrite it. Importantly, this does not imply temporal immutability:
 \begin{equation}
   F_{s+1} = \operatorname{ExternalUpdate}(F_s, e_{s+1}).
@@ -70,12 +70,12 @@ Each fact item is represented as
 \end{equation}
 where $v_j$ is the value, $\kappa_j$ its source type, $t_j$ a timestamp, $\nu_j$ a version or freshness marker, and $p_j$ provenance. Fact-channel policy is an explicit runtime decision rather than an implicit consequence of tool execution.
 
-\paragraph{Thought channel.}
+\paragraph{Thought Channel.}
 The thought channel is a structured cognitive field $T_s=(c_{s,1},\ldots,c_{s,N})$, with semantic matrix $H_s\in\mathbb{R}^{N\times d}$ whose row $i$ is $h_{s,i}$. It contains reasoning, hypotheses, information needs, tool intentions, percept interpretations, plans, constraints, and conclusions. Unlike text scratchpads or untyped hidden caches, it exposes structured mutable state through a stable model--runtime contract.
 
 Making these states explicit gives the runtime something more useful than a partially generated string to act on. In particular, it can detect an information need, track which regions depend on it, and preserve uncertainty while a result is still in flight. This enables earlier tool execution and more selective revision after the result arrives.
 
-\paragraph{Display channel.}
+\paragraph{Display Channel.}
 $Y_s$ is a length-$L$ sequence over $\mathcal{V}\cup\{\textsc{mask}\}$ that converges to the user-visible output. It may be revised as $T_s$ changes. Display properties such as current length, remaining budget, formatting constraints, and citation coverage can be fed back into the thought channel, allowing the model to continuously adjust content rather than enforce such constraints only after generation.
 
 Separating display from thought lets CID revise user-visible text when new evidence arrives without requiring all intermediate cognition to be serialized into that text. It also allows already useful parts of the answer to continue converging while evidence-dependent regions remain uncertain, preserving useful computation during tool latency.
@@ -117,7 +117,7 @@ The local noise vector
 \end{equation}
 allows different regions to evolve asynchronously. A supported conclusion may be nearly stable, an unresolved query may remain highly diffused, and a previously stable hypothesis may be reopened after a changing external fact arrives.
 
-\subsection{Latent information needs}
+\subsection{Latent Information Needs}
 \label{sec:latent-needs}
 
 Tool use is represented as a role within $T_s$, not as a separate text region. A model-side intent adapter reads the cognitive field and registered source descriptors $\mathcal{D}=\{d_m\}$:
@@ -142,7 +142,7 @@ For read-only tools, a binding may begin before every argument has reached textu
 
 The main efficiency benefit is that external work can start at need emergence or partial argument binding rather than after a complete call has been decoded. If the need is identified several denoising steps earlier than an executable textual call, those steps can overlap tool latency instead of adding to it. At the same time, retaining uncertainty and partial arguments avoids forcing the model to commit prematurely to details that later denoising may change.
 
-\subsection{Persistent perceptual bindings}
+\subsection{Persistent Perceptual Bindings}
 \label{sec:bindings}
 
 A conventional tool call is a transient request--response pair. CID instead creates a persistent perceptual binding
@@ -159,10 +159,10 @@ A binding remains active while the corresponding information need remains active
   \label{eq:two-refreshes}
 \end{align}
 
-\paragraph{Static or unchanged source.}
+\paragraph{Static or Unchanged Source.}
 If the source version is unchanged, the runtime can reuse $v_j$ but recompute $P_j^{s+1}$. The same fact may therefore receive a different task-specific interpretation as cognition evolves. This supports copying and sustained reference: the source need not be re-read, yet its influence is renewed at each relevant denoising update.
 
-\paragraph{Changing source.}
+\paragraph{Changing Source.}
 If the source is time-varying or streamable, $\rho_j$ may request polling, version checks, event subscriptions, or incremental chunks. An arriving value updates a fact item if policy marks it as protected, and always permits a new cognitive projection. Examples include current time, evolving display length, a modified file, sensor input, or streaming retrieval results.
 
 A simple refresh policy is
@@ -179,7 +179,7 @@ More advanced policies can trade information gain, latency, and tool cost.
 
 This distinction is what allows persistent information use without persistent I/O. For a static source, CID can repeatedly refresh the result's influence on evolving cognition while paying the external access cost only once. For a changing source, the same binding provides an explicit place to decide when a new fetch is worth its latency or cost. Persistent bindings therefore reduce duplicate calls while still allowing long or changing reasoning trajectories to remain grounded in external information.
 
-\subsection{Perceptual assimilation}
+\subsection{Perceptual Assimilation}
 \label{sec:assimilation}
 
 A tool result is not merely appended to a prompt. The percept encoder creates a context-dependent projection
@@ -207,7 +207,7 @@ where $\Delta^-_{j,i}$ measures conflict and $\Delta^+_{j,i}$ support. Conflicti
 
 Local reopening is important for efficiency as well as correctness. New evidence should revise the state it invalidates, but it should not discard unrelated work that was already correct. Adjusting editability per cell therefore aims to preserve useful computation while concentrating additional denoising on regions that actually need correction.
 
-\subsection{Asynchronous runtime}
+\subsection{Asynchronous Runtime}
 \label{sec:runtime}
 
 \Cref{fig:cid-runtime} describes the runtime loop. Model denoising never blocks solely because a read-only operation is outstanding. The runtime continuously reads needs, manages bindings, receives events, and updates the model's external conditions.
@@ -218,7 +218,7 @@ The runtime is asynchronous for a direct performance reason: waiting for retriev
   \small
   \hrule
   \vspace{3pt}
-  \textbf{CID runtime for read-only perception}
+  \textbf{CID Runtime for Read-Only Perception}
   \begin{enumerate}[leftmargin=*,label=\arabic*.,itemsep=1pt,topsep=3pt]
     \item Initialize facts $F$, masked thought $T$, masked display $Y$, bindings $\mathcal{B}=\varnothing$, and jobs $\mathcal{J}=\varnothing$.
     \item Run one coupled denoising step to update $(T,Y)$ and expose information needs $I$.
