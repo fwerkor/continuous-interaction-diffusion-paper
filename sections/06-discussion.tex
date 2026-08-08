@@ -20,7 +20,7 @@ Persistent re-projection may reduce I/O but increase model computation. Local di
 A latent thought channel may contain sensitive source-derived information even when it is not displayed. Runtime logging, debugging, and model inspection must therefore distinguish operational observability from exposing private chain-of-thought content. Typed metadata and source links can support auditing without requiring full decoding of the thought tensor.
 
 \paragraph{Read-only scope.}
-This paper intentionally excludes side-effecting tools. Persistent perception is substantially easier to manage than persistent action. Writes require commitment, authorization, idempotency, rollback, and user confirmation mechanisms that should not be conflated with the first demonstration of continuous perception.
+The initial CID system focuses on read-only sources such as retrieval, file reads, databases, calculators, clocks, environment state, and streaming feeds. This restriction isolates the central question---whether sustained asynchronous perception can be integrated into a diffusion trajectory---from authorization, rollback, and irreversible action safety. Persistent perception is substantially easier to manage than persistent action. Side-effecting tools require commitment, authorization, idempotency, rollback, and user confirmation mechanisms and are left to future work.
 
 \paragraph{Human cognition analogy.}
 Sustained perception and repeated cognitive refresh are useful design analogies, not claims that CID models the human brain. CID should be evaluated as a computational architecture on measurable quality, latency, and revision behavior.

@@ -79,22 +79,3 @@ New observations should be able to affect several thought and display regions in
 
 \paragraph{Precise symbolic grounding.}
 Continuous representations must remain connected to exact external objects. Paths, numbers, entity identifiers, tool schemas, source versions, and provenance should be preserved through symbolic anchors and explicit source links instead of relying on latent similarity alone.
-
-\begin{table}[t]
-  \centering
-  \small
-  \caption{Interaction assumptions of representative designs. ``Persistent'' means that an information need can remain bound to a source across model updates without repeated textual calls.}
-  \label{tab:interaction-comparison}
-  \resizebox{\columnwidth}{!}{%
-  \begin{tabular}{@{}lccc@{}}
-    \toprule
-    Design & Revises past state & Async. I/O & Persistent percept \\
-    \midrule
-    AR ReAct & No & Optional & No \\
-    Async. AR agent & No & Yes & Runtime-only \\
-    dLLM with early call region & Partial & Yes & No \\
-    \cid & Yes & Yes & Model--runtime \\
-    \bottomrule
-  \end{tabular}%
-  }
-\end{table}
