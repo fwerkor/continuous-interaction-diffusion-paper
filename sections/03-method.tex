@@ -21,25 +21,25 @@ This separation makes ownership explicit. Values controlled by the user, environ
 
 Table~\ref{tab:cid-mechanisms} maps the six design requirements in Section~2.6 to the CID mechanisms that realize them and restates the intended effect of each design.
 
-\begin{table}[t]
+\begin{table*}[t]
   \centering
   \footnotesize
-  \setlength{\tabcolsep}{3pt}
+  \renewcommand{\arraystretch}{0.92}
   \caption{How CID realizes the six design requirements in Section~2.6.}
   \label{tab:cid-mechanisms}
-  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.27\columnwidth}>{\raggedright\arraybackslash}p{0.29\columnwidth}>{\raggedright\arraybackslash}p{0.38\columnwidth}@{}}
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}@{}}
     \toprule
     Design Requirement & CID Mechanism & Effect \\
     \midrule
-    Continuous evolution & Asynchronous runtime & Reasoning and display generation continue while read-only external operations are in flight. \\
-    Early, non-linguistic intent & Latent information needs & An information need becomes usable before a complete tool name, query string, or JSON object has converged. \\
-    Persistent perception & Persistent perceptual bindings & The same external value can remain active without repeated I/O; changing sources can be refreshed or streamed. \\
-    Externally controlled facts & Fact channel & Externally controlled values remain outside the model's write authority while still changing with their external source. \\
-    Joint revision & Perceptual assimilation + local diffusion & Conflicting evidence can reopen relevant regions while unrelated, well-supported content remains stable. \\
-    Precise symbolic grounding & Typed Cognitive Tensor: symbolic anchors + source links & Exact external objects remain connected to continuous representations. \\
+    Continuous Evolution & Asynchronous Runtime & Reasoning and display generation continue while read-only external operations are in flight. \\
+    Early, Non-Linguistic Intent & Latent Information Needs & An information need becomes usable before a complete tool name, query string, or JSON object has converged. \\
+    Persistent Perception & Persistent Perceptual Bindings & The same external value can remain active without repeated I/O; changing sources can be refreshed or streamed. \\
+    Externally Controlled Facts & Fact Channel & Externally controlled values remain outside the model's write authority while still changing with their external source. \\
+    Joint Revision & Perceptual Assimilation + Local Diffusion & Conflicting evidence can reopen relevant regions while unrelated, well-supported content remains stable. \\
+    Precise Symbolic Grounding & Typed Cognitive Tensor: Symbolic Anchors + Source Links & Exact external objects remain connected to continuous representations. \\
     \bottomrule
   \end{tabular}
-\end{table}
+\end{table*}
 
 \paragraph{Running Example.}
 
