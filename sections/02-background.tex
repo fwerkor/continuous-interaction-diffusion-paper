@@ -62,8 +62,11 @@ For tool interaction, however, an unrestricted latent tensor is not enough. The 
 
 The preceding background yields six requirements for a diffusion-native interaction architecture.
 
-\paragraph{Continuous Evolution.}
-Reasoning and display generation should continue while read-only external operations are in flight. When a result arrives, it should condition the current trajectory directly, without requiring the system to restart reasoning as a separate model turn.
+\paragraph{Externally Controlled Facts.}
+Some values must remain outside the model's write authority, including user-pinned constraints, exact source values, and runtime-maintained state, while thought and display remain revisable. Such values can still change when their external source changes. Read-only therefore describes the model's permission over the value, not whether the value is constant over time.
+
+\paragraph{Precise Symbolic Grounding.}
+Continuous representations must remain connected to exact external objects. Paths, numbers, entity identifiers, tool schemas, source versions, and provenance should be preserved through symbolic anchors and explicit source links instead of relying on latent similarity alone.
 
 \paragraph{Early, Non-Linguistic Intent.}
 A coarse information need should become usable before a complete tool name, query string, or JSON object has converged. Tool identity has been shown to be linearly readable from internal activations in autoregressive models \citep{wu2026toolreadable}, suggesting that a trained model-side interface can expose typed intent before full textual serialization.
@@ -71,11 +74,8 @@ A coarse information need should become usable before a complete tool name, quer
 \paragraph{Persistent Perception.}
 An information need may remain relevant across many model updates. The system should represent this persistence explicitly. For a static source, the same external value can remain active without repeated I/O. For a changing source, the binding can request refreshed values or consume a stream.
 
-\paragraph{Externally Controlled Facts.}
-Some values must remain outside the model's write authority, including user-pinned constraints, exact source values, and runtime-maintained state. Such values can still change when their external source changes. Read-only therefore describes the model's permission over the value, not whether the value is constant over time.
-
 \paragraph{Joint Revision.}
 New observations should be able to affect several thought and display regions in one evolving state. The system needs selective reopening so conflicting evidence can make relevant regions revisable while unrelated, well-supported content remains stable.
 
-\paragraph{Precise Symbolic Grounding.}
-Continuous representations must remain connected to exact external objects. Paths, numbers, entity identifiers, tool schemas, source versions, and provenance should be preserved through symbolic anchors and explicit source links instead of relying on latent similarity alone.
+\paragraph{Continuous Evolution.}
+Reasoning and display generation should continue while read-only external operations are in flight. When a result arrives, it should condition the current trajectory directly, without requiring the system to restart reasoning as a separate model turn.
