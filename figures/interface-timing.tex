@@ -19,9 +19,9 @@
   \draw[line] (arcall) -- (arwait);
   \draw[line] (arwait) -- (arobs);
   \draw[line] (arobs) -- (ardone);
-  \draw[line] (ardone) -- (arfinal);
-  \draw[line, rounded corners=3pt] (ardone.north) -- ++(0,0.78cm) -|
-    node[edgeLabel, above, pos=0.46] {no: continue reasoning} (arreason.north);
+  \draw[line] (ardone) -- node[edgeLabel, above] {yes} (arfinal);
+  \draw[line, rounded corners=3pt] (ardone.north)
+    -- node[edgeLabel, right, pos=0.45] {no} ++(0,0.78cm) -| (arreason.north);
 
   % CID lane: arrivals enter the current trajectory rather than starting a new turn.
   \node[font=\bfseries, anchor=east] at (-0.35,-0.15) {CID on a dLLM};
@@ -32,10 +32,10 @@
     \node[event, fill=thoughtfill] at (\x,-0.15) {};
     \node[note] at (\x,-0.62) {\lab};
   }
-  \draw[line] (cidcheck) -- (cidfinal);
-  \draw[line, rounded corners=3pt] (cidcheck.south) -- ++(0,-0.82cm)
-    -- node[edgeLabel, below] {continue denoising} (9.15,-0.97)
-    -- (9.15,-0.38);
+  \draw[line] (cidcheck) -- node[edgeLabel, above] {yes} (cidfinal);
+  \draw[line, rounded corners=3pt] (cidcheck.south)
+    -- node[edgeLabel, right, pos=0.45] {no} ++(0,-0.82cm)
+    -- (9.15,-0.97) -- (9.15,-0.38);
 
   \node[stage, fill=runtimefill, minimum width=2.0cm] (need) at (4.20,0.82) {need emerges};
   \draw[line] (need.south) -- (4.20,-0.15);
