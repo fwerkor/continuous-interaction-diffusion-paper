@@ -21,8 +21,8 @@
   \draw[flow, rounded corners=3pt] (noise.north) -- ++(0,0.62) -| (denoise.north);
   \node[lab, anchor=south, yshift=2pt] at (7.3,2.63) {next update};
 
-  \node[runtime, minimum width=2.75cm] (match) at (5.0,0) {match / update binding};
-  \node[runtime, minimum width=3.0cm] (schedule) at (9.1,0) {reuse, refresh, or launch};
+  \node[runtime, minimum width=2.55cm, inner xsep=4pt] (match) at (5.0,0) {match / update binding};
+  \node[runtime, minimum width=2.8cm, inner xsep=4pt] (schedule) at (9.1,0) {reuse, refresh, or launch};
   \node[runtime, minimum width=2.55cm] (events) at (13.1,0) {consume events};
   \draw[flow] (needs.south) -- (match.north);
   \draw[flow] (match) -- (schedule);
