@@ -121,7 +121,7 @@ A user requests a response that must reproduce a value from a document exactly. 
 
 \subsection{Dynamic Display Length}
 
-The current display length is an externally computed value that the model may read but cannot rewrite. A binding to the length monitor remains active during generation. At each update, the runtime supplies a refreshed value, which changes the thought tensor's plan and density decisions. The display can compress earlier text because the value conditions both current cognition and already generated output regions.
+The current realized display length---for example, the inferred EOS position or populated span within the fixed canvas---is an externally computed value that the model may read but cannot rewrite. A binding to the length monitor remains active during generation. At each update, the runtime supplies a refreshed value, which changes the thought tensor's plan and density decisions. The display can compress earlier text because the value conditions both current cognition and already generated output regions.
 
 \subsection{Streaming Retrieval}
 

@@ -47,7 +47,7 @@ The thought channel is a structured cognitive field $T_s=(c_{s,1},\ldots,c_{s,N}
 Making these states explicit gives the runtime something more useful than a partially generated string to act on. In particular, it can detect an information need, track which regions depend on it, and preserve uncertainty while a result is still in flight. This enables earlier tool execution and more selective revision after the result arrives.
 
 \paragraph{Display Channel.}
-$Y_s$ is a length-$L$ sequence over $\mathcal{V}\cup\{\textsc{mask}\}$ that converges to the user-visible output. It may be revised as $T_s$ changes. Display properties such as current length, remaining budget, formatting constraints, and citation coverage can be fed back into the thought channel, allowing the model to continuously adjust content rather than enforce such constraints only after generation.
+$Y_s$ is a length-$L$ sequence over $\mathcal{V}\cup\{\textsc{mask}\}$ that converges to the user-visible output. It may be revised as $T_s$ changes. Display properties such as realized output length (e.g., the current EOS position or populated span), remaining budget, formatting constraints, and citation coverage can be fed back into the thought channel, allowing the model to continuously adjust content rather than enforce such constraints only after generation.
 
 Separating display from thought lets CID revise user-visible text when new evidence arrives without requiring all intermediate cognition to be serialized into that text. It also allows already useful parts of the answer to continue converging while evidence-dependent regions remain uncertain, preserving useful computation during tool latency.
 
@@ -57,7 +57,7 @@ The model performs coupled updates
   Y_{s+1} &\sim D_Y(Y_s \mid P, F_s, T_{s+1}, \tau^Y_s),
   \label{eq:coupled-denoise}
 \end{align}
-where $\mathcal{P}_s$ denotes perceptual projections from active bindings and $\tau^T_s,\tau^Y_s$ are local noise schedules.
+where $\mathcal{P}_s$ denotes perceptual projections from active bindings and $\tau^T_s,\tau^Y_s$ are local editability schedules for thought cells and display positions, respectively. For $Y_s$, increased editability can be realized by remasking or bounded revision of already visible tokens.
 
 \subsection{Typed Cognitive Tensor}
 \label{sec:tct}
@@ -148,7 +148,7 @@ A binding remains active while the corresponding information need remains active
 If the source version is unchanged, the runtime can reuse $v_j$ but recompute $P_j^{s+1}$. The same fact may therefore receive a different task-specific interpretation as cognition evolves. This supports copying and sustained reference: the source need not be re-read, yet its influence is renewed at each relevant denoising update.
 
 \paragraph{Changing Source.}
-If the source is time-varying or streamable, $\rho_j$ may request polling, version checks, event subscriptions, or incremental chunks. An arriving value updates a fact item if policy marks it as protected, and always permits a new cognitive projection. Examples include current time, evolving display length, a modified file, sensor input, or streaming retrieval results.
+If the source is time-varying or streamable, $\rho_j$ may request polling, version checks, event subscriptions, or incremental chunks. An arriving value updates a fact item if policy marks it as protected, and always permits a new cognitive projection. Examples include current time, evolving realized display length, a modified file, sensor input, or streaming retrieval results.
 
 A simple refresh policy is
 \begin{equation}
@@ -160,7 +160,7 @@ A simple refresh policy is
   \end{cases}
   \label{eq:refresh-policy}
 \end{equation}
-More advanced policies can trade information gain, latency, and tool cost.
+Here $\nu_j(s)$ denotes a version already observed through a source event or a lightweight freshness probe; obtaining it is itself external work. If no cheap version signal exists, a due refresh must re-read the source rather than assume that its version is known. More advanced policies can trade information gain, latency, and tool cost.
 
 This distinction is what allows persistent information use without persistent I/O. For a static source, CID can repeatedly refresh the result's influence on evolving cognition while paying the external access cost only once. For a changing source, the same binding provides an explicit place to decide when a new fetch is worth its latency or cost. Persistent bindings therefore reduce duplicate calls while still allowing long or changing reasoning trajectories to remain grounded in external information.
 
@@ -177,7 +177,7 @@ whose interpretation depends on the current thought and display states. Projecti
   \widetilde{T}_s = T_s + \sum_{j\in\mathcal{B}_s} g_{j,s}\,A(T_s,P_j^s),
   \label{eq:percept-assimilation}
 \end{equation}
-where $g_{j,s}$ is predicted from need persistence, relevance, and source freshness.
+where $g_{j,s}$ is predicted from need persistence, relevance, and source freshness. This residual form is one realization of the $\mathcal{P}_s$ conditioning in \cref{eq:coupled-denoise}; an implementation may perform the same fusion inside $D_T$.
 
 \begin{figure*}[t]
   \centering
@@ -195,7 +195,7 @@ New evidence may change the editability of existing cells. Let $\Delta_{j,i}$ es
   - \lambda_{\mathrm{close}}\Delta^+_{j,i}\right),
   \label{eq:local-noise-update}
 \end{equation}
-where $\Delta^-_{j,i}$ measures conflict and $\Delta^+_{j,i}$ support. Conflicting regions become more diffused and revisable; supported regions stabilize. This generalizes token remasking to typed latent cognition and display regions.
+where $\Delta^-_{j,i}$ measures conflict and $\Delta^+_{j,i}$ support. Conflicting cognitive cells become more diffused and revisable; supported cells stabilize. Evidence-linked display positions are reopened analogously through $\tau^Y_s$, implemented by remasking or bounded visible-token revision.
 
 Local reopening is important for efficiency as well as correctness. New evidence should revise the state it invalidates, but it should not discard unrelated work that was already correct. Adjusting editability per cell therefore aims to preserve useful computation while concentrating additional denoising on regions that actually need correction.
 
@@ -206,7 +206,7 @@ Local reopening is important for efficiency as well as correctness. New evidence
 
 The runtime is asynchronous for a direct performance reason: waiting for retrieval, file I/O, or another read-only source should not automatically become idle model time. CID instead allows the model to refine source-independent cognition and display regions while the job is in flight, then revises dependent regions after arrival. End-to-end latency improves when this waiting-time computation remains useful, which is why the evaluation measures latency at matched answer quality rather than token-generation speed alone.
 
-Initialization sets facts $F$, masked thought $T$, masked display $Y$, bindings $\mathcal{B}=\varnothing$, and jobs $\mathcal{J}=\varnothing$. Each model update exposes information needs; the runtime matches or updates bindings, launches a read only when policy requires a fresh value and no equivalent job is active, consumes arriving events, and re-projects cached values when another external access is unnecessary. The model then adjusts local noise using support or conflict impact and continues until convergence or budget exhaustion. The runtime deduplicates equivalent external work but does not suppress repeated perception: two identical needs may share one cached value while each diffusion step obtains a fresh projection. A refined need can update an existing binding's selector, while an independent-verification need can establish a second source binding.
+Initialization sets facts $F$, an initial thought state $T$, masked display $Y$, bindings $\mathcal{B}=\varnothing$, and jobs $\mathcal{J}=\varnothing$. Each model update exposes information needs; the runtime matches or updates bindings, launches a read only when policy requires a fresh value and no equivalent job is active, consumes arriving events, and re-projects cached values when another external access is unnecessary. The model then adjusts local noise using support or conflict impact and continues until convergence or budget exhaustion. External work is keyed by the source and canonicalized launch arguments, and a completion is applied only to active bindings whose current work key still matches it; selector refinement therefore makes obsolete in-flight work cancellable or discardable. The runtime deduplicates equivalent external work but does not suppress repeated perception: two identical needs may share one cached value while each diffusion step obtains a fresh projection. A refined need can update an existing binding's selector, while an independent-verification need can establish a second source binding.
 
 \medskip
 \noindent\rule{\columnwidth}{0.5pt}

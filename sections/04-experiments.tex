@@ -26,7 +26,7 @@ Compare CID against an asynchronous autoregressive model with the same sources, 
 The model reads a fixed document, table, or code fragment and must repeatedly preserve exact values while composing a longer response. This directly tests the distinction between repeated external execution and repeated cognitive refresh.
 
 \paragraph{Dynamic State Tracking.}
-A source changes during generation: current time, a key--value entry, a file version, remaining token budget, or display length. The final output must reflect the latest value and revise stale intermediate conclusions.
+A source changes during generation: current time, a key--value entry, a file version, remaining token budget, or realized display length. The final output must reflect the latest value and revise stale intermediate conclusions.
 
 \paragraph{Delayed Retrieval.}
 Question answering tasks provide a retriever whose results arrive after controlled delays. Some answer regions can be prepared without evidence; others must remain unresolved until retrieval arrives.
