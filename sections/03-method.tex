@@ -105,6 +105,13 @@ with the following fields:
   \item $\ell_{s,i}$: lifecycle state, such as active, waiting, stable, or retired.
 \end{itemize}
 
+\begin{figure}[t]
+  \centering
+  \resizebox{0.98\columnwidth}{!}{\input{figures/tct-anatomy}}
+  \caption{Anatomy of a Typed Cognitive Tensor cell. Continuous semantics remain locally revisable, while typed metadata exposes exact anchors, dependencies, uncertainty, editability, and lifecycle to the runtime.}
+  \label{fig:tct-anatomy}
+\end{figure}
+
 Roles are soft rather than mutually exclusive. A cell can simultaneously represent a hypothesis and the information need that would verify it. Sparse anchors prevent precise objects from drifting in a continuous latent space, while the continuous component preserves ambiguity and multiple competing interpretations.
 
 These fields are included because different parts of tool-augmented reasoning require different behavior. Soft roles retain the flexibility of continuous cognition; symbolic anchors preserve exact tool identifiers, entities, paths, numbers, and output locations; source links identify which state should be revised when evidence changes; uncertainty exposes whether an external result is still needed; and per-cell diffusion levels allow revision to concentrate on affected regions. The expected benefit is higher grounding accuracy with less destructive or global recomputation after each external event.
@@ -156,6 +163,13 @@ A binding remains active while the corresponding information need remains active
   \text{cognitive refresh: }& P_j^{s+1} \leftarrow \Project(v_j, T_s, Y_s).
   \label{eq:two-refreshes}
 \end{align}
+
+\begin{figure*}[t]
+  \centering
+  \resizebox{0.96\textwidth}{!}{\input{figures/binding-lifecycle}}
+  \caption{Lifecycle of a persistent perceptual binding. An unchanged source can be cognitively refreshed by re-projecting its cached value, while a source-version change triggers a new external refresh before projection. The binding persists until the originating need becomes inactive.}
+  \label{fig:binding-lifecycle}
+\end{figure*}
 
 \paragraph{Static or Unchanged Source.}
 If the source version is unchanged, the runtime can reuse $v_j$ but recompute $P_j^{s+1}$. The same fact may therefore receive a different task-specific interpretation as cognition evolves. This supports copying and sustained reference: the source need not be re-read, yet its influence is renewed at each relevant denoising update.
@@ -212,27 +226,14 @@ Local reopening is important for efficiency as well as correctness. New evidence
 
 The runtime is asynchronous for a direct performance reason: waiting for retrieval, file I/O, or another read-only source should not automatically become idle model time. CID instead allows the model to refine source-independent cognition and display regions while the job is in flight, then revises dependent regions after arrival. End-to-end latency improves when this waiting-time computation remains useful, which is why the evaluation measures latency at matched answer quality rather than token-generation speed alone.
 
-\begin{figure}[t]
-  \small
-  \hrule
-  \vspace{3pt}
-  \textbf{CID Runtime for Read-Only Perception}
-  \begin{enumerate}[leftmargin=*,label=\arabic*.,itemsep=1pt,topsep=3pt]
-    \item Initialize facts $F$, masked thought $T$, masked display $Y$, bindings $\mathcal{B}=\varnothing$, and jobs $\mathcal{J}=\varnothing$.
-    \item Run one coupled denoising step to update $(T,Y)$ and expose information needs $I$.
-    \item For each $i\in I$, match or create a binding, then update its arguments, persistence, and target links.
-    \item If a binding requires external refresh and no equivalent job is active, launch an asynchronous job; otherwise re-project its cached result.
-    \item Consume newly arrived events, update caches, optionally promote protected values into $F$, and project observations into $T$.
-    \item Adjust local noise using support/conflict impact, retire inactive bindings, and repeat until convergence or budget exhaustion.
-    \item Seal and return the display $Y$.
-  \end{enumerate}
-  \vspace{2pt}
-  \hrule
-  \caption{Reference CID runtime loop. External work and model denoising proceed concurrently.}
+\begin{figure*}[t]
+  \centering
+  \resizebox{0.96\textwidth}{!}{\input{figures/runtime-loop}}
+  \caption{Reference CID runtime loop for read-only perception. Model denoising, binding management, cached re-projection, and external I/O advance as coupled but separately scheduled processes.}
   \label{fig:cid-runtime}
-\end{figure}
+\end{figure*}
 
-The runtime deduplicates equivalent external work but does not suppress repeated perception. Two identical needs may share one cached value while each diffusion step obtains a fresh projection. A refined need can update an existing binding's selector, while an independent-verification need can establish a second source binding.
+Initialization sets facts $F$, masked thought $T$, masked display $Y$, bindings $\mathcal{B}=\varnothing$, and jobs $\mathcal{J}=\varnothing$. Each model update exposes information needs; the runtime matches or updates bindings, launches a read only when policy requires a fresh value and no equivalent job is active, consumes arriving events, and re-projects cached values when another external access is unnecessary. The model then adjusts local noise using support or conflict impact and continues until convergence or budget exhaustion. The runtime deduplicates equivalent external work but does not suppress repeated perception: two identical needs may share one cached value while each diffusion step obtains a fresh projection. A refined need can update an existing binding's selector, while an independent-verification need can establish a second source binding.
 
 \medskip
 \noindent\rule{\columnwidth}{0.5pt}

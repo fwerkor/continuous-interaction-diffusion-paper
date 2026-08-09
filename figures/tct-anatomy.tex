@@ -1,0 +1,24 @@
+\begin{tikzpicture}[
+  font=\scriptsize,
+  field/.style={draw, rounded corners=2pt, align=center, minimum width=1.72cm, minimum height=0.62cm, inner sep=3pt},
+  link/.style={-{Latex[length=1.5mm]}, semithick}
+]
+  \node[circle, draw, fill=thoughtfill, minimum size=1.75cm, align=center, font=\small\bfseries] (core) at (0,0)
+    {cell $c_{s,i}$};
+
+  \node[field, fill=thoughtfill] (sem) at (0,2.0) {semantic content\\$h_{s,i}\in\mathbb{R}^d$};
+  \node[field, fill=thoughtfill] (role) at (2.45,1.18) {soft role\\$r_{s,i}$};
+  \node[field, fill=factfill] (anchor) at (2.55,-1.08) {symbolic anchors\\$a_{s,i}$};
+  \node[field, fill=factfill] (links) at (0,-2.0) {source / cell links\\$q_{s,i}$};
+  \node[field, fill=runtimefill] (unc) at (-2.55,-1.08) {uncertainty\\$u_{s,i}$};
+  \node[field, fill=runtimefill] (noise) at (-2.45,1.18) {local diffusion\\$\tau_{s,i}$};
+  \node[field, fill=displayfill, minimum width=1.58cm] (life) at (3.95,0.0) {lifecycle\\$\ell_{s,i}$};
+
+  \draw[link] (sem) -- (core);
+  \draw[link] (role) -- (core);
+  \draw[link] (anchor) -- (core);
+  \draw[link] (links) -- (core);
+  \draw[link] (unc) -- (core);
+  \draw[link] (noise) -- (core);
+  \draw[link] (life) -- (core);
+\end{tikzpicture}

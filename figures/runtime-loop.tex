@@ -1,0 +1,38 @@
+\begin{tikzpicture}[
+  font=\small,
+  model/.style={draw, rounded corners=2pt, fill=thoughtfill, minimum height=0.82cm, align=center, inner xsep=7pt},
+  runtime/.style={draw, rounded corners=2pt, fill=runtimefill, minimum height=0.82cm, align=center, inner xsep=7pt},
+  source/.style={draw, rounded corners=2pt, fill=factfill, minimum height=0.82cm, align=center, inner xsep=7pt},
+  flow/.style={-{Latex[length=1.8mm]}, thick},
+  async/.style={-{Latex[length=1.8mm]}, thick, dashed},
+  lane/.style={font=\bfseries, anchor=east},
+  lab/.style={font=\scriptsize, fill=white, inner sep=1pt}
+]
+  \node[lane] at (-0.35,1.6) {Model};
+  \node[lane] at (-0.35,0.0) {Runtime};
+  \node[lane] at (-0.35,-1.6) {Sources};
+
+  \node[model, minimum width=2.45cm] (denoise) at (1.55,1.6) {denoise $T,Y$};
+  \node[model, minimum width=2.45cm] (needs) at (5.0,1.6) {expose needs $I$};
+  \node[model, minimum width=2.7cm] (assimilate) at (9.1,1.6) {assimilate arrivals};
+  \node[model, minimum width=2.65cm] (noise) at (13.1,1.6) {adjust local noise};
+  \draw[flow] (denoise) -- (needs);
+  \draw[flow] (assimilate) -- (noise);
+  \draw[flow] (noise.east) -- ++(0.65,0) |- node[lab, pos=0.25, right] {next update} (denoise.north);
+
+  \node[runtime, minimum width=2.75cm] (match) at (5.0,0) {match / update binding};
+  \node[runtime, minimum width=3.0cm] (schedule) at (9.1,0) {reuse, refresh, or launch};
+  \node[runtime, minimum width=2.55cm] (events) at (13.1,0) {consume events};
+  \draw[flow] (needs.south) -- (match.north);
+  \draw[flow] (match) -- (schedule);
+  \draw[flow] (events.north) -- (assimilate.south);
+
+  \node[source, minimum width=3.2cm] (external) at (9.1,-1.6) {read-only external work};
+  \draw[async] (schedule.south) -- node[lab, right] {async} (external.north);
+  \draw[async] (external.east) -| (events.south);
+
+  \draw[async] (schedule.north) -- ++(0,0.42) -| node[lab, above, pos=0.65] {cached re-projection} (assimilate.south);
+
+  \node[font=\scriptsize, align=center, text width=5.6cm] at (4.25,-2.45)
+    {Model work continues while I/O is in flight; equivalent jobs are deduplicated, but cached percepts may be projected again at later diffusion steps.};
+\end{tikzpicture}

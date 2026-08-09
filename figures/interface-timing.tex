@@ -1,0 +1,43 @@
+\begin{tikzpicture}[
+  font=\small,
+  stage/.style={draw, rounded corners=2pt, minimum height=0.72cm, align=center, inner xsep=6pt, inner ysep=3pt},
+  event/.style={circle, draw, minimum size=4.6mm, inner sep=0pt},
+  line/.style={-{Latex[length=1.8mm]}, thick},
+  async/.style={-{Latex[length=1.8mm]}, thick, dashed},
+  note/.style={font=\scriptsize, align=center}
+]
+  % Turn-based AR lane.
+  \node[font=\bfseries, anchor=east] at (-0.35,2.15) {Turn-based AR};
+  \node[stage, fill=thoughtfill, minimum width=2.15cm] (arreason) at (1.2,2.15) {reason};
+  \node[stage, fill=runtimefill, minimum width=2.15cm] (arcall) at (4.0,2.15) {explicit call};
+  \node[stage, minimum width=1.75cm] (arwait) at (6.65,2.15) {wait};
+  \node[stage, fill=factfill, minimum width=2.15cm] (arobs) at (9.25,2.15) {observation};
+  \node[stage, fill=displayfill, minimum width=2.35cm] (arcont) at (12.25,2.15) {continue};
+  \draw[line] (arreason) -- (arcall);
+  \draw[line] (arcall) -- (arwait);
+  \draw[line] (arwait) -- (arobs);
+  \draw[line] (arobs) -- (arcont);
+
+  % CID lane.
+  \node[font=\bfseries, anchor=east] at (-0.35,-0.15) {CID on a dLLM};
+  \draw[line] (0.1,-0.15) -- (13.65,-0.15);
+  \foreach \x/\lab in {1.0/$s_0$,3.1/$s_1$,5.2/$s_2$,7.3/$s_3$,9.4/$s_4$,11.5/$s_5$,13.3/$s_6$} {
+    \node[event, fill=thoughtfill] at (\x,-0.15) {};
+    \node[note] at (\x,-0.62) {\lab};
+  }
+  \node[stage, fill=runtimefill, minimum width=2.0cm] (need) at (4.35,0.82) {need emerges};
+  \draw[line] (need.south) -- (4.35,-0.15);
+
+  \node[stage, fill=factfill, minimum width=2.3cm] (job) at (7.25,-1.55) {external job};
+  \draw[async] (4.35,-0.35) |- (job.west);
+  \draw[async] (job.east) -| (10.25,-0.35);
+  \node[note] at (7.25,-2.18) {tool latency overlaps continued denoising};
+
+  \node[stage, fill=factfill, minimum width=2.2cm] (arrival) at (10.25,0.82) {result arrives};
+  \draw[line] (10.25,-0.15) -- (arrival.south);
+  \draw[async] (arrival.west) .. controls (9.3,1.55) and (7.9,1.55) .. (6.9,0.15);
+  \draw[async] (arrival.east) .. controls (11.1,1.55) and (12.0,1.25) .. (12.25,0.15);
+
+  \node[stage, fill=displayfill, minimum width=2.15cm] (stable) at (13.1,0.82) {converge};
+  \draw[line] (13.1,-0.15) -- (stable.south);
+\end{tikzpicture}
