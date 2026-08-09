@@ -27,35 +27,38 @@
   \node[font=\bfseries, anchor=east] at (-0.35,-0.10) {CID on a dLLM};
   \node[note, anchor=east] at (-0.35,-1.48) {CID runtime};
 
-  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cid0) at (0.95,-0.10) {$s_0$};
-  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cid1) at (2.55,-0.10) {$s_1$};
-  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cid2) at (4.15,-0.10) {$s_2$};
-  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cid3) at (5.75,-0.10) {$s_3$};
-  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cid4) at (7.35,-0.10) {$s_4$};
-  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cid5) at (8.95,-0.10) {$s_5$};
-  \node[stage, minimum width=1.65cm] (cidcheck) at (10.85,-0.10) {converged?};
-  \node[stage, fill=displayfill, minimum width=2.15cm] (cidfinal) at (13.25,-0.10) {final response};
+  % Show representative updates rather than enumerating a fixed trajectory length.
+  \node[font=\large] (pre) at (0.65,-0.10) {$\cdots$};
+  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cidi) at (2.05,-0.10) {$s_i$};
+  \node[stage, fill=thoughtfill, minimum width=1.45cm] (cidi1) at (3.95,-0.10) {$s_{i+1}$};
+  \node[font=\large] (mid) at (5.45,-0.10) {$\cdots$};
+  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cidj) at (6.95,-0.10) {$s_j$};
+  \node[stage, fill=thoughtfill, minimum width=1.45cm] (cidj1) at (8.85,-0.10) {$s_{j+1}$};
+  \node[font=\large] (post) at (10.15,-0.10) {$\cdots$};
+  \node[stage, minimum width=1.65cm] (cidcheck) at (11.55,-0.10) {converged?};
+  \node[stage, fill=displayfill, minimum width=2.15cm] (cidfinal) at (13.85,-0.10) {final response};
 
-  \draw[line] (cid0) -- (cid1);
-  \draw[line] (cid1) -- (cid2);
-  \draw[line] (cid2) -- (cid3);
-  \draw[line] (cid3) -- (cid4);
-  \draw[line] (cid4) -- (cid5);
-  \draw[line] (cid5) -- (cidcheck);
+  \draw[line] (pre.east) -- (cidi.west);
+  \draw[line] (cidi) -- (cidi1);
+  \draw[line] (cidi1.east) -- (mid.west);
+  \draw[line] (mid.east) -- (cidj.west);
+  \draw[line] (cidj) -- (cidj1);
+  \draw[line] (cidj1.east) -- (post.west);
+  \draw[line] (post.east) -- (cidcheck.west);
   \draw[line] (cidcheck) -- node[edgeLabel, above] {yes} (cidfinal);
   \draw[line, rounded corners=3pt] (cidcheck.south)
-    -- node[edgeLabel, right, pos=0.42] {no} ++(0,-0.56cm)
-    -| (cid5.south);
+    -- node[edgeLabel, right, pos=0.35] {no} ++(0,-0.58cm)
+    -| (post.south);
 
-  \node[note] at (4.15,0.54) {need emerges};
-  \node[note] at (7.35,0.54) {assimilate result};
+  \node[note] at (2.05,0.54) {need emerges};
+  \node[note] at (6.95,0.54) {assimilate result};
 
-  \node[stage, fill=runtimefill, minimum width=1.75cm] (bind) at (4.15,-1.48) {bind + launch};
-  \node[stage, fill=factfill, minimum width=2.20cm] (job) at (6.25,-1.48) {external read\\in flight};
+  \node[stage, fill=runtimefill, minimum width=1.75cm] (bind) at (2.05,-1.48) {bind + launch};
+  \node[stage, fill=factfill, minimum width=2.20cm] (job) at (4.85,-1.48) {external read\\in flight};
 
-  \draw[line] (cid2.south) -- node[edgeLabel, right] {need} (bind.north);
+  \draw[line] (cidi.south) -- node[edgeLabel, right] {need} (bind.north);
   \draw[async] (bind.east) -- (job.west);
-  \draw[line] (job.east) -- node[edgeLabel, right] {result} (cid4.south);
+  \draw[line] (job.east) -- node[edgeLabel, right] {result} (cidj.south);
 
-  \node[note] at (6.25,-2.14) {read latency overlaps the $s_3$ update};
+  \node[note] at (4.85,-2.14) {read latency overlaps any number of intermediate updates};
 \end{tikzpicture}
