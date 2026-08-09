@@ -42,6 +42,13 @@ The important property for this paper is \emph{revisability}. Consider a partial
 
 This does not imply that every dLLM automatically supports arbitrary editing, perfect parallelism, or efficient tool use. Different dLLM architectures impose different masking schedules, block structures, and decoding constraints. CID relies only on the broader capability that some regions of the generative state can remain revisable across iterative updates. The architecture then asks how external information should enter such a state while it is still evolving.
 
+\begin{figure*}[t]
+  \centering
+  \resizebox{0.96\textwidth}{!}{\input{figures/interface-timing}}
+  \caption{Interaction timing: serialized autoregressive tool use versus CID.}
+  \label{fig:interface-timing}
+\end{figure*}
+
 \subsection{Why the Conventional Tool Interface Underuses Diffusion}
 
 Suppose a model is drafting an answer while a search request is running. Before the search result arrives, it may have formed a tentative hypothesis, reserved an output span for evidence, and identified a second question whose relevance depends on the first result. When the result arrives, three kinds of change may be useful simultaneously: revise the hypothesis, update the remaining information needs, and modify an earlier part of the displayed answer.
@@ -49,13 +56,6 @@ Suppose a model is drafting an answer while a search request is running. Before 
 A turn-based interface represents the same event as a new observation appended after the call. This representation is sufficient for left-to-right continuation, but it does not directly express which earlier cognitive regions the observation should reopen or which ongoing information need the observation satisfies. Current dLLM agents often retain such explicit call regions. DLLM-Searcher, for example, prioritizes decoding a search-call region and lets other reasoning continue while search is in flight \citep{zhao2026dllmsearcher}. This improves overlap, yet the external interaction still begins from a serialized call and returns through a discrete observation boundary.
 
 Existing evaluations also indicate that simply replacing an AR backbone with a dLLM does not automatically produce a strong agent. Current dLLMs can struggle with exact tool schemas and temporally ordered feedback in conventional workflows \citep{lu2026bitterlesson}. A diffusion-native agent interface therefore needs to preserve precise symbolic grounding while giving the runtime access to information needs and revisable state before they become ordinary text.
-
-\begin{figure*}[t]
-  \centering
-  \resizebox{0.96\textwidth}{!}{\input{figures/interface-timing}}
-  \caption{Interaction timing: serialized autoregressive tool use versus CID.}
-  \label{fig:interface-timing}
-\end{figure*}
 
 \Cref{fig:interface-timing} summarizes the mismatch. The relevant difference is not merely that CID launches I/O asynchronously; it lets the model expose a need before textual serialization is complete and lets the returned evidence alter multiple still-revisable regions of the same trajectory.
 
