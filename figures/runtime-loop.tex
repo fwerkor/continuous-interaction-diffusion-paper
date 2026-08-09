@@ -33,7 +33,7 @@
   \draw[async] (schedule.south) -- node[lab, right] {async} (external.north);
   \draw[async] (external.east) -| (events.south);
 
-  \draw[async] (schedule.north) -- node[lab, left, align=right] {cached\\re-projection} (assimilate.south);
+  \draw[async] (schedule.north) -- node[lab, anchor=east, xshift=-3pt, align=right] {cached\\re-projection} (assimilate.south);
 
   \node[font=\scriptsize, align=center, text width=5.6cm] at (4.25,-2.45)
     {Model work continues while I/O is in flight; equivalent jobs are deduplicated, but cached percepts may be projected again at later diffusion steps.};
