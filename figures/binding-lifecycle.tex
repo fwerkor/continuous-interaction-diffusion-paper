@@ -6,10 +6,10 @@
   note/.style={font=\scriptsize, align=center}
 ]
   \node[state, fill=thoughtfill, minimum width=2.25cm] (need) at (0,0) {active\\information need};
-  \node[state, fill=runtimefill, minimum width=2.35cm] (bind) at (3.25,0) {persistent binding\\$b_j$};
-  \node[state, fill=factfill, minimum width=2.5cm] (cache) at (6.8,0) {cached value\\version + provenance};
-  \node[state, fill=thoughtfill, minimum width=2.45cm] (project) at (10.35,0) {contextual projection\\$P_j^s$};
-  \node[state, fill=displayfill, minimum width=2.35cm] (state) at (13.75,0) {evolving\\thought + display};
+  \node[state, fill=runtimefill, minimum width=2.35cm] (bind) at (3.6,0) {persistent binding\\$b_j$};
+  \node[state, fill=factfill, minimum width=2.5cm] (cache) at (7.25,0) {cached value\\version + provenance};
+  \node[state, fill=thoughtfill, minimum width=2.45cm] (project) at (10.95,0) {contextual projection\\$P_j^s$};
+  \node[state, fill=displayfill, minimum width=2.35cm] (state) at (14.55,0) {evolving\\thought + display};
 
   \draw[flow] (need) -- (bind);
   \draw[flow] (bind) -- (cache);
@@ -20,10 +20,10 @@
   \draw[flow] (bind.south west) -- (retire.north east);
   \node[note] at (1.65,-1.08) {need inactive};
 
-  \node[state, fill=factfill, minimum width=2.6cm] (source) at (6.8,-2.0) {external read\\or refresh};
+  \node[state, fill=factfill, minimum width=2.6cm] (source) at (7.25,-2.0) {external read\\or refresh};
   \draw[flow] (source.north) -- (cache.south);
-  \node[note] at (6.8,-2.78) {first fetch or source-version change};
+  \node[note] at (7.25,-2.78) {first fetch or source-version change};
 
   \draw[loop] (state.north) -- ++(0,1.0) -| (project.north);
-  \node[note] at (12.05,1.23) {need remains active:\\re-project cached value};
+  \node[note] at (12.75,1.23) {need remains active:\\re-project cached value};
 \end{tikzpicture}

@@ -18,20 +18,20 @@
   \node[model, minimum width=2.65cm] (noise) at (13.1,1.6) {adjust local noise};
   \draw[flow] (denoise) -- (needs);
   \draw[flow] (assimilate) -- (noise);
-  \draw[flow] (noise.east) -- ++(0.65,0) |- node[lab, pos=0.25, right] {next update} (denoise.north);
+  \draw[flow, rounded corners=3pt] (noise.north) -- ++(0,0.62) -| node[lab, above, pos=0.52] {next update} (denoise.north);
 
   \node[runtime, minimum width=2.75cm] (match) at (5.0,0) {match / update binding};
   \node[runtime, minimum width=3.0cm] (schedule) at (9.1,0) {reuse, refresh, or launch};
   \node[runtime, minimum width=2.55cm] (events) at (13.1,0) {consume events};
   \draw[flow] (needs.south) -- (match.north);
   \draw[flow] (match) -- (schedule);
-  \draw[flow] (events.north) -- (assimilate.south);
+  \draw[flow, rounded corners=3pt] (events.north) -- ++(0,0.38) -| (assimilate.east);
 
   \node[source, minimum width=3.2cm] (external) at (9.1,-1.6) {read-only external work};
   \draw[async] (schedule.south) -- node[lab, right] {async} (external.north);
   \draw[async] (external.east) -| (events.south);
 
-  \draw[async] (schedule.north) -- ++(0,0.42) -| node[lab, above, pos=0.65] {cached re-projection} (assimilate.south);
+  \draw[async] (schedule.north) -- node[lab, left, align=right] {cached\\re-projection} (assimilate.south);
 
   \node[font=\scriptsize, align=center, text width=5.6cm] at (4.25,-2.45)
     {Model work continues while I/O is in flight; equivalent jobs are deduplicated, but cached percepts may be projected again at later diffusion steps.};
