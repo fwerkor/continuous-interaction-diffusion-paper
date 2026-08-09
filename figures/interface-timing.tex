@@ -45,9 +45,8 @@
   \draw[line] (cidcheck.east) -- (cidfinal.west);
   \node[note] at ($(cidcheck.east)!0.5!(cidfinal.west)+(0,0.14cm)$) {yes};
   \draw[line, rounded corners=3pt] (cidcheck.south)
-    -- ++(0,-0.66cm)
+    -- node[edgeLabel, right, pos=0.45] {no} ++(0,-0.66cm)
     -| (post.south);
-  \node[note, anchor=west] at ($(cidcheck.south)+(0.12cm,-0.30cm)$) {no};
 
   \node[note] at (2.05,0.54) {need emerges};
   \node[note] at (7.05,0.54) {assimilate result};
