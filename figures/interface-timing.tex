@@ -4,40 +4,49 @@
   event/.style={circle, draw, minimum size=4.6mm, inner sep=0pt},
   line/.style={-{Latex[length=1.8mm]}, thick},
   async/.style={-{Latex[length=1.8mm]}, thick, dashed},
-  note/.style={font=\scriptsize, align=center}
+  note/.style={font=\scriptsize, align=center},
+  edgeLabel/.style={font=\scriptsize, fill=white, inner sep=1pt}
 ]
-  % Turn-based AR lane.
+  % Turn-based AR lane: each observation starts another discrete decision point.
   \node[font=\bfseries, anchor=east] at (-0.35,2.15) {Turn-based AR};
-  \node[stage, fill=thoughtfill, minimum width=2.15cm] (arreason) at (1.2,2.15) {reason};
-  \node[stage, fill=runtimefill, minimum width=2.15cm] (arcall) at (4.0,2.15) {explicit call};
-  \node[stage, minimum width=1.75cm] (arwait) at (6.65,2.15) {wait};
-  \node[stage, fill=factfill, minimum width=2.15cm] (arobs) at (9.25,2.15) {observation};
-  \node[stage, fill=displayfill, minimum width=2.35cm] (arcont) at (12.25,2.15) {continue};
+  \node[stage, fill=thoughtfill, minimum width=1.95cm] (arreason) at (1.05,2.15) {reason};
+  \node[stage, fill=runtimefill, minimum width=2.05cm] (arcall) at (3.70,2.15) {explicit call};
+  \node[stage, minimum width=1.55cm] (arwait) at (6.10,2.15) {wait};
+  \node[stage, fill=factfill, minimum width=2.05cm] (arobs) at (8.50,2.15) {observation};
+  \node[stage, minimum width=1.55cm] (ardone) at (10.85,2.15) {done?};
+  \node[stage, fill=displayfill, minimum width=2.15cm] (arfinal) at (13.35,2.15) {final response};
   \draw[line] (arreason) -- (arcall);
   \draw[line] (arcall) -- (arwait);
   \draw[line] (arwait) -- (arobs);
-  \draw[line] (arobs) -- (arcont);
+  \draw[line] (arobs) -- (ardone);
+  \draw[line] (ardone) -- (arfinal);
+  \draw[line, rounded corners=3pt] (ardone.north) -- ++(0,0.78cm) -|
+    node[edgeLabel, above, pos=0.46] {no: continue reasoning} (arreason.north);
 
-  % CID lane.
+  % CID lane: arrivals enter the current trajectory rather than starting a new turn.
   \node[font=\bfseries, anchor=east] at (-0.35,-0.15) {CID on a dLLM};
-  \draw[line] (0.1,-0.15) -- (14.25,-0.15);
-  \foreach \x/\lab in {1.0/$s_0$,3.1/$s_1$,5.2/$s_2$,7.3/$s_3$,9.4/$s_4$,11.5/$s_5$,13.3/$s_6$} {
+  \node[stage, minimum width=1.65cm] (cidcheck) at (10.75,-0.15) {converged?};
+  \node[stage, fill=displayfill, minimum width=2.15cm] (cidfinal) at (13.25,-0.15) {final response};
+  \draw[line] (0.1,-0.15) -- (cidcheck.west);
+  \foreach \x/\lab in {0.9/$s_0$,2.55/$s_1$,4.2/$s_2$,5.85/$s_3$,7.5/$s_4$,9.15/$s_5$} {
     \node[event, fill=thoughtfill] at (\x,-0.15) {};
     \node[note] at (\x,-0.62) {\lab};
   }
-  \node[stage, fill=runtimefill, minimum width=2.0cm] (need) at (4.35,0.82) {need emerges};
-  \draw[line] (need.south) -- (4.35,-0.15);
+  \draw[line] (cidcheck) -- (cidfinal);
+  \draw[line, rounded corners=3pt] (cidcheck.south) -- ++(0,-0.82cm)
+    -- node[edgeLabel, below] {continue denoising} (9.15,-0.97)
+    -- (9.15,-0.38);
 
-  \node[stage, fill=factfill, minimum width=2.3cm] (job) at (7.25,-1.55) {external job};
-  \draw[async] (4.35,-0.35) |- (job.west);
-  \draw[async] (job.east) -| (10.25,-0.35);
-  \node[note] at (7.25,-2.18) {tool latency overlaps continued denoising};
+  \node[stage, fill=runtimefill, minimum width=2.0cm] (need) at (4.20,0.82) {need emerges};
+  \draw[line] (need.south) -- (4.20,-0.15);
 
-  \node[stage, fill=factfill, minimum width=2.2cm] (arrival) at (10.25,0.82) {result arrives};
-  \draw[line] (10.25,-0.15) -- (arrival.south);
-  \draw[async] (arrival.west) .. controls (8.55,1.30) and (7.45,1.18) .. (6.75,0.08);
-  \draw[async] (arrival.east) .. controls (11.62,0.62) and (11.72,0.20) .. (12.05,0.02);
+  \node[stage, fill=factfill, minimum width=2.3cm] (job) at (6.45,-1.60) {external job};
+  \draw[async] (4.20,-0.35) |- (job.west);
+  \draw[async] (job.east) -| (8.55,-0.35);
+  \node[note] at (6.45,-2.20) {tool latency overlaps continued denoising};
 
-  \node[stage, fill=displayfill, minimum width=2.15cm] (stable) at (13.3,0.82) {converge};
-  \draw[line] (13.3,-0.15) -- (stable.south);
+  \node[stage, fill=factfill, minimum width=2.2cm] (arrival) at (8.55,0.82) {result arrives};
+  \draw[line] (8.55,-0.15) -- (arrival.south);
+  \draw[async] (arrival.west) .. controls (7.25,1.28) and (6.45,1.15) .. (5.85,0.08);
+  \draw[async] (arrival.east) .. controls (9.42,0.62) and (9.45,0.20) .. (9.15,0.02);
 \end{tikzpicture}
