@@ -19,7 +19,7 @@
   \draw[line] (arcall) -- (arwait);
   \draw[line] (arwait) -- (arobs);
   \draw[line] (arobs) -- (ardone);
-  \draw[line] (ardone) -- node[edgeLabel, above] {yes} (arfinal);
+  \draw[line] (ardone) -- node[edgeLabel, above, yshift=1pt] {yes} (arfinal);
   \draw[line, rounded corners=3pt] (ardone.north)
     -- node[edgeLabel, right, pos=0.45] {no} ++(0,0.78cm) -| (arreason.north);
 
@@ -28,30 +28,27 @@
   \node[note, anchor=east] at (-0.35,-1.48) {CID runtime};
 
   % Representative updates only: ellipses denote arbitrary-length portions of the trajectory.
-  \node[font=\large, inner sep=0pt] (pre) at (0.85,-0.10) {$\cdots$};
   \node[stage, fill=thoughtfill, minimum width=1.25cm] (cidi) at (2.05,-0.10) {$s_i$};
   \node[stage, fill=thoughtfill, minimum width=1.45cm] (cidi1) at (3.95,-0.10) {$s_{i+1}$};
-  \node[font=\large, inner sep=0pt] (mid) at (5.48,-0.10) {$\cdots$};
   \node[stage, fill=thoughtfill, minimum width=1.25cm] (cidj) at (7.05,-0.10) {$s_j$};
   \node[stage, fill=thoughtfill, minimum width=1.45cm] (cidj1) at (8.95,-0.10) {$s_{j+1}$};
-  \node[font=\large, inner sep=0pt] (post) at (10.48,-0.10) {$\cdots$};
   \node[stage, minimum width=1.95cm] (cidcheck) at (12.25,-0.10) {converged?};
   \node[stage, fill=displayfill, minimum width=2.15cm] (cidfinal) at (14.85,-0.10) {final response};
 
-  % Ellipses are independent markers: arrows never terminate inside their glyphs.
-  \draw[line] ($(pre.east)+(0.10cm,0)$) -- (cidi.west);
+  % Draw continuous arrows first, then mask only the small area occupied by each ellipsis.
+  \draw[line] (0.50,-0.10) -- (cidi.west);
   \draw[line] (cidi) -- (cidi1);
-  \draw[thick] (cidi1.east) -- ($(mid.west)+(-0.10cm,0)$);
-  \draw[line] ($(mid.east)+(0.10cm,0)$) -- (cidj.west);
+  \draw[line] (cidi1) -- (cidj);
   \draw[line] (cidj) -- (cidj1);
-  \draw[thick] (cidj1.east) -- ($(post.west)+(-0.10cm,0)$);
-  \coordinate (continue) at (11.20,-0.10);
-  \draw[line] ($(post.east)+(0.10cm,0)$) -- (cidcheck.west);
+  \draw[line] (cidj1) -- (cidcheck);
+  \node[font=\large, fill=white, inner xsep=2pt, inner ysep=0pt] (pre) at (0.85,-0.10) {$\cdots$};
+  \node[font=\large, fill=white, inner xsep=2pt, inner ysep=0pt] (mid) at (5.48,-0.10) {$\cdots$};
+  \node[font=\large, fill=white, inner xsep=2pt, inner ysep=0pt] (post) at (10.48,-0.10) {$\cdots$};
   \draw[line] (cidcheck.east) -- (cidfinal.west);
-  \node[note] at ($(cidcheck.east)!0.5!(cidfinal.west)+(0,0.28cm)$) {yes};
+  \node[note] at ($(cidcheck.east)!0.5!(cidfinal.west)+(0,0.14cm)$) {yes};
   \draw[line, rounded corners=3pt] (cidcheck.south)
     -- ++(0,-0.66cm)
-    -| (continue);
+    -| (post.south);
   \node[note, anchor=west] at ($(cidcheck.south)+(0.12cm,-0.30cm)$) {no};
 
   \node[note] at (2.05,0.54) {need emerges};
@@ -62,7 +59,7 @@
 
   \draw[line] (cidi.south) -- (bind.north);
   \node[note, anchor=west] at ($(cidi.south)!0.5!(bind.north)+(0.10cm,0)$) {need};
-  \draw[async] (bind.east) -- (job.west);
+  \draw[line] (bind.east) -- (job.west);
   \draw[line, rounded corners=2pt] (job.east) -- ++(0.52cm,0)
     -| (cidj.south);
   \node[note, anchor=west] at ($(cidj.south)+(0.10cm,-0.43cm)$) {result};
