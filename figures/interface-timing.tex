@@ -25,8 +25,6 @@
 
   % CID lane: the dLLM trajectory keeps advancing while the runtime performs I/O.
   \node[font=\bfseries, anchor=east] at (-0.35,-0.10) {CID on a dLLM};
-  \node[note, anchor=east] at (-0.35,-1.48) {CID runtime};
-
   % Representative updates only: ellipses denote arbitrary-length portions of the trajectory.
   \node[stage, fill=thoughtfill, minimum width=1.25cm] (cidi) at (2.05,-0.10) {$s_i$};
   \node[stage, fill=thoughtfill, minimum width=1.45cm] (cidi1) at (3.95,-0.10) {$s_{i+1}$};
@@ -64,5 +62,4 @@
     -| (cidj.south);
   \node[note, anchor=west] at ($(cidj.south)+(0.10cm,-0.43cm)$) {result};
 
-  \node[note] at (4.95,-2.28) {read latency may span arbitrarily many intermediate updates};
 \end{tikzpicture}
