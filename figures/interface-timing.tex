@@ -27,38 +27,36 @@
   \node[font=\bfseries, anchor=east] at (-0.35,-0.10) {CID on a dLLM};
   \node[note, anchor=east] at (-0.35,-1.48) {CID runtime};
 
-  % Show representative updates rather than enumerating a fixed trajectory length.
-  \node[font=\large] (pre) at (0.65,-0.10) {$\cdots$};
+  % Representative updates only: ellipses denote arbitrary-length portions of the trajectory.
   \node[stage, fill=thoughtfill, minimum width=1.25cm] (cidi) at (2.05,-0.10) {$s_i$};
   \node[stage, fill=thoughtfill, minimum width=1.45cm] (cidi1) at (3.95,-0.10) {$s_{i+1}$};
-  \node[font=\large] (mid) at (5.45,-0.10) {$\cdots$};
-  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cidj) at (6.95,-0.10) {$s_j$};
-  \node[stage, fill=thoughtfill, minimum width=1.45cm] (cidj1) at (8.85,-0.10) {$s_{j+1}$};
-  \node[font=\large] (post) at (10.15,-0.10) {$\cdots$};
-  \node[stage, minimum width=1.65cm] (cidcheck) at (11.55,-0.10) {converged?};
-  \node[stage, fill=displayfill, minimum width=2.15cm] (cidfinal) at (13.85,-0.10) {final response};
+  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cidj) at (7.05,-0.10) {$s_j$};
+  \node[stage, fill=thoughtfill, minimum width=1.45cm] (cidj1) at (8.95,-0.10) {$s_{j+1}$};
+  \node[stage, minimum width=1.95cm] (cidcheck) at (12.00,-0.10) {converged?};
+  \node[stage, fill=displayfill, minimum width=2.15cm] (cidfinal) at (14.60,-0.10) {final response};
 
-  \draw[line] (pre.east) -- (cidi.west);
+  % Put ellipses on the timeline itself, so they do not become arrow endpoints.
+  \draw[line] (0.55,-0.10) -- node[fill=white, inner xsep=7pt] {$\cdots$} (cidi.west);
   \draw[line] (cidi) -- (cidi1);
-  \draw[line] (cidi1.east) -- (mid.west);
-  \draw[line] (mid.east) -- (cidj.west);
+  \draw[line] (cidi1) -- node[fill=white, inner xsep=10pt] {$\cdots$} (cidj);
   \draw[line] (cidj) -- (cidj1);
-  \draw[line] (cidj1.east) -- (post.west);
-  \draw[line] (post.east) -- (cidcheck.west);
-  \draw[line] (cidcheck) -- node[edgeLabel, above] {yes} (cidfinal);
+  \coordinate (continue) at (10.55,-0.10);
+  \draw[line] (cidj1) -- node[fill=white, inner xsep=9pt] {$\cdots$} (cidcheck);
+  \draw[line] (cidcheck) -- node[edgeLabel, above, pos=0.50] {yes} (cidfinal);
   \draw[line, rounded corners=3pt] (cidcheck.south)
-    -- node[edgeLabel, right, pos=0.35] {no} ++(0,-0.58cm)
-    -| (post.south);
+    -- node[edgeLabel, right, pos=0.32] {no} ++(0,-0.62cm)
+    -| (continue);
 
   \node[note] at (2.05,0.54) {need emerges};
-  \node[note] at (6.95,0.54) {assimilate result};
+  \node[note] at (7.05,0.54) {assimilate result};
 
-  \node[stage, fill=runtimefill, minimum width=1.75cm] (bind) at (2.05,-1.48) {bind + launch};
-  \node[stage, fill=factfill, minimum width=2.20cm] (job) at (4.85,-1.48) {external read\\in flight};
+  \node[stage, fill=runtimefill, minimum width=1.90cm] (bind) at (2.05,-1.52) {bind + launch};
+  \node[stage, fill=factfill, minimum width=2.35cm] (job) at (4.95,-1.52) {external read\\in flight};
 
-  \draw[line] (cidi.south) -- node[edgeLabel, right] {need} (bind.north);
+  \draw[line] (cidi.south) -- node[edgeLabel, right, pos=0.52] {need} (bind.north);
   \draw[async] (bind.east) -- (job.west);
-  \draw[line] (job.east) -- node[edgeLabel, right] {result} (cidj.south);
+  \draw[line, rounded corners=2pt] (job.east) -- ++(0.48cm,0)
+    -| node[edgeLabel, right, pos=0.82] {result} (cidj.south);
 
-  \node[note] at (4.85,-2.14) {read latency overlaps any number of intermediate updates};
+  \node[note] at (4.95,-2.22) {read latency can overlap arbitrarily many intermediate updates};
 \end{tikzpicture}
