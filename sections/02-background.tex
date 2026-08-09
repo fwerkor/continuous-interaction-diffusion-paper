@@ -57,7 +57,7 @@ A turn-based interface represents the same event as a new observation appended a
 
 Existing evaluations also indicate that simply replacing an AR backbone with a dLLM does not automatically produce a strong agent. Current dLLMs can struggle with exact tool schemas and temporally ordered feedback in conventional workflows \citep{lu2026bitterlesson}. A diffusion-native agent interface therefore needs to preserve precise symbolic grounding while giving the runtime access to information needs and revisable state before they become ordinary text.
 
-\Cref{fig:interface-timing} summarizes the mismatch. The relevant difference is not merely that CID launches I/O asynchronously; it lets the model expose a need before textual serialization is complete and lets the returned evidence alter multiple still-revisable regions of the same trajectory.
+\Cref{fig:interface-timing} summarizes the mismatch. Beyond asynchronous I/O, CID exposes a need before textual serialization is complete and allows returned evidence to alter multiple still-revisable regions of the same trajectory.
 
 \subsection{Continuous Latent Reasoning}
 

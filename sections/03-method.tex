@@ -33,13 +33,13 @@ $F_s$ contains information whose value is controlled outside the generative stat
 \end{equation}
 A clock, system load, changing document, or user-updated constraint may therefore change between diffusion steps. The channel may contain user-pinned statements, exact values that must be quoted, authoritative tool results, and provenance metadata. Not every tool result must be promoted to $F_s$; ephemeral or low-value observations may remain in the runtime cache and enter cognition only through a temporary projection.
 
-The purpose of this channel is grounding rather than additional reasoning capacity. Separating protected values from mutable cognition prevents exact numbers, constraints, and provenance from being altered by later denoising, while external updates can still replace them when the underlying source genuinely changes. This directly targets factual and copying errors without freezing the rest of the model state.
+This channel provides grounding while leaving reasoning to the mutable cognitive state. Separating protected values from mutable cognition prevents exact numbers, constraints, and provenance from being altered by later denoising, while external updates can still replace them when the underlying source genuinely changes. This directly targets factual and copying errors without freezing the rest of the model state.
 
 Each fact item is represented as
 \begin{equation}
   f_j = (v_j, \kappa_j, t_j, \nu_j, p_j),
 \end{equation}
-where $v_j$ is the value, $\kappa_j$ its source type, $t_j$ a timestamp, $\nu_j$ a version or freshness marker, and $p_j$ provenance. Fact-channel policy is an explicit runtime decision rather than an implicit consequence of tool execution.
+where $v_j$ is the value, $\kappa_j$ its source type, $t_j$ a timestamp, $\nu_j$ a version or freshness marker, and $p_j$ provenance. Fact-channel policy is an explicit runtime decision governing whether a tool result is promoted.
 
 \paragraph{Thought Channel.}
 The thought channel is a structured cognitive field $T_s=(c_{s,1},\ldots,c_{s,N})$, with semantic matrix $H_s\in\mathbb{R}^{N\times d}$ whose row $i$ is $h_{s,i}$. It contains reasoning, hypotheses, information needs, tool intentions, percept interpretations, plans, constraints, and conclusions. Unlike text scratchpads or untyped hidden caches, it exposes structured mutable state through a stable model--runtime contract.
@@ -109,7 +109,7 @@ Each candidate need $i_k\in I_s$ contains
 \end{equation}
 where $n_k$ is a continuous need embedding, $\pi_k$ a distribution over registered sources or tools, $\alpha_k$ partially bound arguments, $\omega_k$ uncertainty, $\eta_k$ freshness or persistence demand, and $\chi_k$ links to affected cognitive or display regions.
 
-The adapter exposes a typed interface rather than arbitrary raw activations. This choice preserves early access to latent intent while insulating the runtime from model-specific hidden-state geometry. It also separates three stages that need not occur at the same diffusion step:
+The adapter exposes a typed interface over the cognitive field. This choice preserves early access to latent intent while insulating the runtime from model-specific hidden-state geometry. It also separates three stages that need not occur at the same diffusion step:
 \begin{equation}
   \begin{aligned}
     \text{need emergence} &\rightarrow \text{source selection}\\
@@ -167,7 +167,7 @@ This distinction is what allows persistent information use without persistent I/
 \subsection{Perceptual Assimilation}
 \label{sec:assimilation}
 
-A tool result is not merely appended to a prompt. The percept encoder creates a context-dependent projection
+The percept encoder converts each tool result into a context-dependent projection
 \begin{equation}
   P_j^s = E_{\psi}(v_j, p_j, T_s, Y_s),
   \label{eq:percept-projection}

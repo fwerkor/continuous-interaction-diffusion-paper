@@ -15,7 +15,7 @@ Vary source latency while holding model compute fixed. Measure whether the model
 For static sources, compare one-time injection with per-step cognitive re-projection. For dynamic sources, compare no refresh, fixed polling, and need-conditioned refresh. Tasks should test exact copying, evidence application, stale-value avoidance, and revision of already formed output.
 
 \paragraph{RQ4: Is the Typed Cognitive Tensor Necessary?}
-Compare (i) a natural-language thought string, (ii) an untyped continuous latent tensor, and (iii) the proposed \tct. The expected benefit of typing is not merely accuracy but stable source binding, precise symbolic references, local revision, and inspectable runtime control.
+Compare (i) a natural-language thought string, (ii) an untyped continuous latent tensor, and (iii) the proposed \tct. Measure accuracy, source-binding stability, symbolic-reference precision, locality of revision, and runtime inspectability.
 
 \paragraph{RQ5: Is Diffusion Essential?}
 Compare CID against an asynchronous autoregressive model with the same sources, training data, and approximate compute budget. A convincing result must show a benefit from revising prior cognition or display regions, rather than from asynchronous I/O alone.
@@ -81,4 +81,4 @@ A full evaluation should remove role typing, symbolic anchors, source links, per
 
 \subsection{Falsification Criteria}
 
-CID would not be supported if latent bindings do not reliably precede explicit calls, if post-arrival revision destroys more correct state than it repairs, if waiting-time computation is mostly discarded, or if an asynchronous autoregressive baseline matches quality and latency with lower complexity. These outcomes should be treated as substantive negative results rather than implementation details.
+CID would not be supported if latent bindings do not reliably precede explicit calls, if post-arrival revision destroys more correct state than it repairs, if waiting-time computation is mostly discarded, or if an asynchronous autoregressive baseline matches quality and latency with lower complexity. These outcomes constitute substantive negative results for the CID hypothesis.
