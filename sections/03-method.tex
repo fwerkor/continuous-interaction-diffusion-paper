@@ -108,7 +108,7 @@ with the following fields:
 \begin{figure}[t]
   \centering
   \resizebox{0.98\columnwidth}{!}{\input{figures/tct-anatomy}}
-  \caption{Anatomy of a Typed Cognitive Tensor cell. Continuous semantics remain locally revisable, while typed metadata exposes exact anchors, dependencies, uncertainty, editability, and lifecycle to the runtime.}
+  \caption{Structure of a Typed Cognitive Tensor cell.}
   \label{fig:tct-anatomy}
 \end{figure}
 
@@ -167,7 +167,7 @@ A binding remains active while the corresponding information need remains active
 \begin{figure*}[t]
   \centering
   \resizebox{0.96\textwidth}{!}{\input{figures/binding-lifecycle}}
-  \caption{Lifecycle of a persistent perceptual binding. An unchanged source can be cognitively refreshed by re-projecting its cached value, while a source-version change triggers a new external refresh before projection. The binding persists until the originating need becomes inactive.}
+  \caption{Lifecycle of a persistent perceptual binding.}
   \label{fig:binding-lifecycle}
 \end{figure*}
 
@@ -229,7 +229,7 @@ The runtime is asynchronous for a direct performance reason: waiting for retriev
 \begin{figure*}[t]
   \centering
   \resizebox{0.96\textwidth}{!}{\input{figures/runtime-loop}}
-  \caption{Reference CID runtime loop for read-only perception. Model denoising, binding management, cached re-projection, and external I/O advance as coupled but separately scheduled processes.}
+  \caption{CID runtime loop for read-only perception.}
   \label{fig:cid-runtime}
 \end{figure*}
 
