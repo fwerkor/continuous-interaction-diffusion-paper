@@ -67,6 +67,33 @@ Continuous latent reasoning keeps some intermediate computation in vector-valued
 
 For tool interaction, however, an unrestricted latent tensor is not enough. The runtime must know whether a latent region represents a hypothesis, an unresolved information need, a source-derived percept, or a stable conclusion. It must also retain exact objects such as file paths, numbers, entity identifiers, source versions, and tool-schema fields. CID therefore combines continuous semantic content with typed roles, symbolic anchors, source links, uncertainty, and local diffusion state.
 
+\begin{table*}[t]
+  \centering
+  \footnotesize
+  \renewcommand{\arraystretch}{0.92}
+  \caption{How CID realizes the six design requirements in Section~2.6.}
+  \label{tab:cid-mechanisms}
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.50\textwidth}@{}}
+    \toprule
+    Design Requirement & CID Mechanism & Effect \\
+    \midrule
+    Externally Controlled Facts & Three Coupled Channels & Externally controlled values remain outside the model's write authority while thought and display remain revisable. \\
+    Precise Symbolic Grounding & Typed Cognitive Tensor & Symbolic anchors and source links keep exact external objects connected to continuous representations. \\
+    Early, Non-Linguistic Intent & Latent Information Needs & An information need becomes usable before a complete tool name, query string, or JSON object has converged. \\
+    Persistent Perception & Persistent Perceptual Bindings & The same external value can remain active without repeated I/O; changing sources can be refreshed or streamed. \\
+    Joint Revision & Perceptual Assimilation & Conflicting evidence can reopen relevant regions while unrelated, well-supported content remains stable. \\
+    Continuous Evolution & Asynchronous Runtime & Reasoning and display generation continue while read-only external operations are in flight. \\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+\begin{figure*}[t!]
+  \centering
+  \input{figures/cid-overview}
+  \caption{Overview of the \cid model--runtime architecture.}
+  \label{fig:cid-overview}
+\end{figure*}
+
 \subsection{Design Requirements}
 
 The preceding background yields six requirements for a diffusion-native interaction architecture.

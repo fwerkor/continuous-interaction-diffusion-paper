@@ -3,33 +3,6 @@
 
 CID is designed around two practical goals: improve task quality by allowing external evidence to correct uncertain or stale model state as soon as it becomes available, and improve end-to-end efficiency by overlapping external work with useful denoising while avoiding duplicate tool execution and unnecessary recomputation. The architecture follows from three corresponding requirements. First, exact externally supplied information must remain stable even while model cognition is revised. Second, an information need should become actionable before the model has fully serialized a textual or JSON tool call, so external latency can start earlier. Third, once a result has arrived, the model should be able to keep using or reinterpret it without repeatedly executing the same external operation. The components below implement these requirements jointly rather than treating tool use as a separate pause between generation rounds. Table~\ref{tab:cid-mechanisms} maps the six design requirements in Section~2.6 to the corresponding CID mechanisms and summarizes their intended effects.
 
-\begin{table*}[t]
-  \centering
-  \footnotesize
-  \renewcommand{\arraystretch}{0.92}
-  \caption{How CID realizes the six design requirements in Section~2.6.}
-  \label{tab:cid-mechanisms}
-  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.50\textwidth}@{}}
-    \toprule
-    Design Requirement & CID Mechanism & Effect \\
-    \midrule
-    Externally Controlled Facts & Three Coupled Channels & Externally controlled values remain outside the model's write authority while thought and display remain revisable. \\
-    Precise Symbolic Grounding & Typed Cognitive Tensor & Symbolic anchors and source links keep exact external objects connected to continuous representations. \\
-    Early, Non-Linguistic Intent & Latent Information Needs & An information need becomes usable before a complete tool name, query string, or JSON object has converged. \\
-    Persistent Perception & Persistent Perceptual Bindings & The same external value can remain active without repeated I/O; changing sources can be refreshed or streamed. \\
-    Joint Revision & Perceptual Assimilation & Conflicting evidence can reopen relevant regions while unrelated, well-supported content remains stable. \\
-    Continuous Evolution & Asynchronous Runtime & Reasoning and display generation continue while read-only external operations are in flight. \\
-    \bottomrule
-  \end{tabular}
-\end{table*}
-
-\begin{figure*}[t!]
-  \centering
-  \input{figures/cid-overview}
-  \caption{Overview of the \cid model--runtime architecture.}
-  \label{fig:cid-overview}
-\end{figure*}
-
 Given a task prompt $P$, at diffusion update $s$, \cid maintains
 \begin{equation}
   \mathcal{S}_s = (F_s, T_s, Y_s, \mathcal{B}_s, \mathcal{J}_s),
