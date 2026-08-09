@@ -3,22 +3,6 @@
 
 CID is designed around two practical goals: improve task quality by allowing external evidence to correct uncertain or stale model state as soon as it becomes available, and improve end-to-end efficiency by overlapping external work with useful denoising while avoiding duplicate tool execution and unnecessary recomputation. The architecture follows from three corresponding requirements. First, exact externally supplied information must remain stable even while model cognition is revised. Second, an information need should become actionable before the model has fully serialized a textual or JSON tool call, so external latency can start earlier. Third, once a result has arrived, the model should be able to keep using or reinterpret it without repeatedly executing the same external operation. The components below implement these requirements jointly rather than treating tool use as a separate pause between generation rounds. Table~\ref{tab:cid-mechanisms} maps the six design requirements in Section~2.6 to the corresponding CID mechanisms and summarizes their intended effects.
 
-\begin{figure*}[t!]
-  \centering
-  \input{figures/cid-overview}
-  \caption{Overview of the \cid model--runtime architecture.}
-  \label{fig:cid-overview}
-\end{figure*}
-
-Given a task prompt $P$, at diffusion update $s$, \cid maintains
-\begin{equation}
-  \mathcal{S}_s = (F_s, T_s, Y_s, \mathcal{B}_s, \mathcal{J}_s),
-  \label{eq:cid-state}
-\end{equation}
-where $F_s$ is the fact channel, $T_s$ the thought channel, $Y_s$ the display channel, $\mathcal{B}_s$ the active perceptual bindings, and $\mathcal{J}_s$ the in-flight external jobs. The original prompt $P$ is fixed token-level conditioning across the trajectory rather than a fourth mutable channel; explicitly protected prompt content may additionally be represented in $F_s$. The model updates $T_s$ and $Y_s$, while the environment and runtime update $F_s$, $\mathcal{B}_s$, and $\mathcal{J}_s$ under explicit permissions.
-
-This separation makes ownership explicit. Externally controlled values need not be regenerated and therefore cannot silently drift during denoising, while cognition and display remain revisable. Keeping bindings and in-flight jobs in the same system state also lets external work advance without stopping the model trajectory.
-
 \begin{table*}[t]
   \centering
   \footnotesize
@@ -38,6 +22,22 @@ This separation makes ownership explicit. Externally controlled values need not 
     \bottomrule
   \end{tabular}
 \end{table*}
+
+\begin{figure*}[t!]
+  \centering
+  \input{figures/cid-overview}
+  \caption{Overview of the \cid model--runtime architecture.}
+  \label{fig:cid-overview}
+\end{figure*}
+
+Given a task prompt $P$, at diffusion update $s$, \cid maintains
+\begin{equation}
+  \mathcal{S}_s = (F_s, T_s, Y_s, \mathcal{B}_s, \mathcal{J}_s),
+  \label{eq:cid-state}
+\end{equation}
+where $F_s$ is the fact channel, $T_s$ the thought channel, $Y_s$ the display channel, $\mathcal{B}_s$ the active perceptual bindings, and $\mathcal{J}_s$ the in-flight external jobs. The original prompt $P$ is fixed token-level conditioning across the trajectory rather than a fourth mutable channel; explicitly protected prompt content may additionally be represented in $F_s$. The model updates $T_s$ and $Y_s$, while the environment and runtime update $F_s$, $\mathcal{B}_s$, and $\mathcal{J}_s$ under explicit permissions.
+
+This separation makes ownership explicit. Externally controlled values need not be regenerated and therefore cannot silently drift during denoising, while cognition and display remain revisable. Keeping bindings and in-flight jobs in the same system state also lets external work advance without stopping the model trajectory.
 
 \paragraph{Running Example.}
 
