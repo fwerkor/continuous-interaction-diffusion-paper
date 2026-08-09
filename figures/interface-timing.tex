@@ -36,12 +36,12 @@
   \node[stage, fill=displayfill, minimum width=2.15cm] (cidfinal) at (14.85,-0.10) {final response};
 
   % Draw continuous arrows first, then mask only the small area occupied by each ellipsis.
-  \draw[line] (0.50,-0.10) -- (cidi.west);
+  \draw[line] (0.24,-0.10) -- (cidi.west);
   \draw[line] (cidi) -- (cidi1);
   \draw[line] (cidi1) -- (cidj);
   \draw[line] (cidj) -- (cidj1);
   \draw[line] (cidj1) -- (cidcheck);
-  \node[font=\large, fill=white, inner xsep=2pt, inner ysep=0pt] (pre) at (0.76,-0.10) {$\cdots$};
+  \node[font=\large, fill=white, inner xsep=2pt, inner ysep=0pt] (pre) at (0.60,-0.10) {$\cdots$};
   \node[font=\large, fill=white, inner xsep=2pt, inner ysep=0pt] (mid) at (5.48,-0.10) {$\cdots$};
   \node[font=\large, fill=white, inner xsep=2pt, inner ysep=0pt] (post) at (10.48,-0.10) {$\cdots$};
   \draw[line] (cidcheck.east) -- (cidfinal.west);
