@@ -20,7 +20,7 @@
 
   % CID lane.
   \node[font=\bfseries, anchor=east] at (-0.35,-0.15) {CID on a dLLM};
-  \draw[line] (0.1,-0.15) -- (13.65,-0.15);
+  \draw[line] (0.1,-0.15) -- (14.25,-0.15);
   \foreach \x/\lab in {1.0/$s_0$,3.1/$s_1$,5.2/$s_2$,7.3/$s_3$,9.4/$s_4$,11.5/$s_5$,13.3/$s_6$} {
     \node[event, fill=thoughtfill] at (\x,-0.15) {};
     \node[note] at (\x,-0.62) {\lab};
@@ -35,9 +35,9 @@
 
   \node[stage, fill=factfill, minimum width=2.2cm] (arrival) at (10.25,0.82) {result arrives};
   \draw[line] (10.25,-0.15) -- (arrival.south);
-  \draw[async] (arrival.west) .. controls (9.3,1.55) and (7.9,1.55) .. (6.9,0.15);
-  \draw[async] (arrival.east) .. controls (11.1,1.55) and (12.0,1.25) .. (12.25,0.15);
+  \draw[async] (arrival.west) .. controls (8.55,1.30) and (7.45,1.18) .. (6.75,0.08);
+  \draw[async] (arrival.east) .. controls (11.62,0.62) and (11.72,0.20) .. (12.05,0.02);
 
-  \node[stage, fill=displayfill, minimum width=2.15cm] (stable) at (13.1,0.82) {converge};
-  \draw[line] (13.1,-0.15) -- (stable.south);
+  \node[stage, fill=displayfill, minimum width=2.15cm] (stable) at (13.3,0.82) {converge};
+  \draw[line] (13.3,-0.15) -- (stable.south);
 \end{tikzpicture}
