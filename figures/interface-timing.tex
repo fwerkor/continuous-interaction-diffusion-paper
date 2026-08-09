@@ -23,30 +23,39 @@
   \draw[line, rounded corners=3pt] (ardone.north)
     -- node[edgeLabel, right, pos=0.45] {no} ++(0,0.78cm) -| (arreason.north);
 
-  % CID lane: arrivals enter the current trajectory rather than starting a new turn.
-  \node[font=\bfseries, anchor=east] at (-0.35,-0.15) {CID on a dLLM};
-  \node[stage, minimum width=1.65cm] (cidcheck) at (10.75,-0.15) {converged?};
-  \node[stage, fill=displayfill, minimum width=2.15cm] (cidfinal) at (13.25,-0.15) {final response};
-  \draw[line] (0.1,-0.15) -- (cidcheck.west);
-  \foreach \x/\lab in {0.9/$s_0$,2.55/$s_1$,4.2/$s_2$,5.85/$s_3$,7.5/$s_4$,9.15/$s_5$} {
-    \node[event, fill=thoughtfill] at (\x,-0.15) {};
-    \node[note] at (\x,-0.62) {\lab};
-  }
+  % CID lane: the dLLM trajectory keeps advancing while the runtime performs I/O.
+  \node[font=\bfseries, anchor=east] at (-0.35,-0.10) {CID on a dLLM};
+  \node[note, anchor=east] at (-0.35,-1.48) {CID runtime};
+
+  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cid0) at (0.95,-0.10) {$s_0$};
+  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cid1) at (2.55,-0.10) {$s_1$};
+  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cid2) at (4.15,-0.10) {$s_2$};
+  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cid3) at (5.75,-0.10) {$s_3$};
+  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cid4) at (7.35,-0.10) {$s_4$};
+  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cid5) at (8.95,-0.10) {$s_5$};
+  \node[stage, minimum width=1.65cm] (cidcheck) at (10.85,-0.10) {converged?};
+  \node[stage, fill=displayfill, minimum width=2.15cm] (cidfinal) at (13.25,-0.10) {final response};
+
+  \draw[line] (cid0) -- (cid1);
+  \draw[line] (cid1) -- (cid2);
+  \draw[line] (cid2) -- (cid3);
+  \draw[line] (cid3) -- (cid4);
+  \draw[line] (cid4) -- (cid5);
+  \draw[line] (cid5) -- (cidcheck);
   \draw[line] (cidcheck) -- node[edgeLabel, above] {yes} (cidfinal);
   \draw[line, rounded corners=3pt] (cidcheck.south)
-    -- node[edgeLabel, right, pos=0.45] {no} ++(0,-0.82cm)
-    -- (9.15,-0.97) -- (9.15,-0.38);
+    -- node[edgeLabel, right, pos=0.42] {no} ++(0,-0.56cm)
+    -| (cid5.south);
 
-  \node[stage, fill=runtimefill, minimum width=2.0cm] (need) at (4.20,0.82) {need emerges};
-  \draw[line] (need.south) -- (4.20,-0.15);
+  \node[note] at (4.15,0.54) {need emerges};
+  \node[note] at (7.35,0.54) {assimilate result};
 
-  \node[stage, fill=factfill, minimum width=2.3cm] (job) at (6.45,-1.60) {external job};
-  \draw[async] (4.20,-0.35) |- (job.west);
-  \draw[async] (job.east) -| (8.55,-0.35);
-  \node[note] at (6.45,-2.20) {tool latency overlaps continued denoising};
+  \node[stage, fill=runtimefill, minimum width=1.75cm] (bind) at (4.15,-1.48) {bind + launch};
+  \node[stage, fill=factfill, minimum width=2.20cm] (job) at (6.25,-1.48) {external read\\in flight};
 
-  \node[stage, fill=factfill, minimum width=2.2cm] (arrival) at (8.55,0.82) {result arrives};
-  \draw[line] (8.55,-0.15) -- (arrival.south);
-  \draw[async] (arrival.west) .. controls (7.25,1.28) and (6.45,1.15) .. (5.85,0.08);
-  \draw[async] (arrival.east) .. controls (9.42,0.62) and (9.45,0.20) .. (9.15,0.02);
+  \draw[line] (cid2.south) -- node[edgeLabel, right] {need} (bind.north);
+  \draw[async] (bind.east) -- (job.west);
+  \draw[line] (job.east) -- node[edgeLabel, right] {result} (cid4.south);
+
+  \node[note] at (6.25,-2.14) {read latency overlaps the $s_3$ update};
 \end{tikzpicture}
