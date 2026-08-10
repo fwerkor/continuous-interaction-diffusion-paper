@@ -9,7 +9,7 @@ This paper does not claim empirical performance results. We specify the minimum 
 Measure the earliest diffusion step at which the typed intent interface correctly identifies source type and information target. Compare it with the step at which a valid textual or JSON call becomes executable. CID is useful only if latent need detection provides a meaningful lead without excessive false bindings.
 
 \paragraph{RQ2: Can Persistent Bindings Hide External Latency?}
-Vary source latency while holding model compute fixed. Measure whether the model uses waiting time to develop cognition and display structure that remains useful after the observation arrives. The central comparison is end-to-end latency at matched answer quality.
+Vary source latency while holding model compute fixed. For quality comparisons, schedule external arrivals on a logical runtime clock that is independent of accelerator throughput; report real wall-clock latency separately on matched hardware. Measure whether the model uses waiting time to develop cognition and display structure that remains useful after the observation arrives, and whether quiescence prevents a faster device from exhausting more refinement budget before the same required evidence becomes available. The central comparison is end-to-end latency at matched answer quality.
 
 \paragraph{RQ3: Does Repeated Perception Improve Assimilation?}
 For static sources, compare one-time injection with per-step cognitive re-projection. For dynamic sources, compare no refresh, fixed polling, and need-conditioned refresh. Tasks should test exact copying, evidence application, stale-value avoidance, and revision of already formed output.

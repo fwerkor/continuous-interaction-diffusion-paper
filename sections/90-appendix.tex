@@ -100,7 +100,7 @@ A perceptual binding can use the following lifecycle:
   \rightarrow \textsc{refreshing} \notag\\
   &\rightarrow \textsc{retired}.
 \end{align}
-A binding can move from \textsc{available} directly back to \textsc{active} when the value is unchanged and only cognitive re-projection is required. It moves to \textsc{refreshing} when the need remains active and the source freshness policy requires external work.
+A binding can move from \textsc{available} directly back to \textsc{active} when the value is unchanged and only cognitive re-projection is required. It moves to \textsc{refreshing} when the need remains active and the source freshness policy requires external work. Quiescence is a trajectory state rather than a binding state: active bindings remain intact while model updates pause, and the next observation resumes refinement without reconstructing the interaction context.
 
 A candidate binding should record:
 \begin{itemize}[leftmargin=*]
@@ -148,6 +148,6 @@ Several design decisions remain open:
   \item which iterative process should update the thought tensor, how many cells it needs, and whether cells should be created or retired dynamically;
   \item whether display and thought diffusion should share a backbone and how source descriptors generalize to unseen tools;
   \item how to estimate support and conflict for local reopening while preserving privacy during debugging;
-  \item how to schedule model updates and external events under a wall-clock budget.
+  \item how to tune refinement-epoch and wall-clock budgets across deployment settings.
 \end{itemize}
 These questions remain open design variables within the CID framework.
