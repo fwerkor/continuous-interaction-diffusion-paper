@@ -52,6 +52,21 @@ scripts/                   Build and validation utilities
 - Public PDF preview: enabled through GitHub Pages
 - Scope of v1: language models and read-only external sources
 
+## Citation
+
+Preprint: [arXiv:2608.10438](https://arxiv.org/abs/2608.10438) · DOI: [10.48550/arXiv.2608.10438](https://doi.org/10.48550/arXiv.2608.10438)
+
+```bibtex
+@article{cao2026continuous,
+  title   = {Continuous Interaction Diffusion: A Diffusion-Native Runtime for Asynchronous Tool-Augmented Reasoning},
+  author  = {Cao, Yuhang},
+  journal = {arXiv preprint arXiv:2608.10438},
+  year    = {2026},
+  doi     = {10.48550/arXiv.2608.10438},
+  url     = {https://arxiv.org/abs/2608.10438}
+}
+```
+
 ## License
 
 Repository infrastructure is derived from `fwerkor/latex-paper-template`. See `LICENSE` for the current license terms.

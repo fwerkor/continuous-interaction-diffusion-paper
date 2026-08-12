@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use or reference this manuscript, please cite the paper below."
+title: "Continuous Interaction Diffusion paper source"
+type: software
+authors:
+  - family-names: Cao
+    given-names: Yuhang
+repository-code: "https://github.com/fwerkor/continuous-interaction-diffusion-paper"
+url: "https://arxiv.org/abs/2608.10438"
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Cao
+      given-names: Yuhang
+  title: "Continuous Interaction Diffusion: A Diffusion-Native Runtime for Asynchronous Tool-Augmented Reasoning"
+  year: 2026
+  doi: 10.48550/arXiv.2608.10438
+  url: "https://arxiv.org/abs/2608.10438"
