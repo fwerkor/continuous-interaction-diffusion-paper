@@ -100,7 +100,7 @@ A perceptual binding can use the following lifecycle:
   \rightarrow \textsc{refreshing} \notag\\
   &\rightarrow \textsc{retired}.
 \end{align}
-A binding can move from \textsc{available} directly back to \textsc{active} when the value is unchanged and only cognitive re-projection is required. It moves to \textsc{refreshing} when the need remains active and the source freshness policy requires external work. Quiescence is a trajectory state rather than a binding state: active bindings remain intact while model updates pause, and the next observation resumes refinement without reconstructing the interaction context.
+A binding can move from \textsc{available} directly back to \textsc{active} when the value is unchanged and only cognitive re-projection is required. It moves to \textsc{refreshing} when the need remains active and the source freshness policy requires external work. Quiescence is defined at the trajectory level: active bindings remain intact while model updates pause, and the next observation resumes refinement without reconstructing the interaction context.
 
 A candidate binding should record:
 \begin{itemize}[leftmargin=*]
@@ -159,7 +159,7 @@ For reproducibility of the development diagnostic, the checkpoint and raw traces
 
 \subsection{CID-Dataset Training Corpus}
 
-The diagnostic prototype and corrected retraining draw from the released \texttt{fwerkor/CID-Dataset} semantic mixture~\cite{cao2026ciddataset}; the corrected run changes tensorization and train--runtime contracts rather than the underlying semantic examples. The materialized JSONL is
+The diagnostic prototype and corrected retraining draw from the released \texttt{fwerkor/CID-Dataset} semantic mixture~\cite{cao2026ciddataset}; the corrected run keeps the underlying semantic examples fixed while changing tensorization and train--runtime contracts. The materialized JSONL is
 8,379,022,223 bytes and contains 192,297 semantic tasks expanded into 421,798 trajectories. There are
 2,589,664 adjacent snapshot transitions plus 421,798 virtual empty-state bootstrap transitions, for
 3,011,462 trainable transitions. Maximum trajectory length is 44 snapshots and the maximum required
@@ -207,9 +207,8 @@ negative supervision against indiscriminate tool use.
 The natural-public subset contributes 30,000 NQ-Open train tasks~\citep{kwiatkowski2019natural,lee2019latent} (CC-BY-SA-3.0), 4,500 OASST1 train
 tasks~\citep{kopf2023openassistant} (Apache-2.0), 15,000 MultiDoc2Dial train tasks~\citep{feng2021multidoc2dial} (CC-BY-3.0), and 2,000 QASPER train tasks~\citep{dasigi2021qasper}
 (CC-BY-4.0). Public-source rows retain upstream repository, revision, split, license, and row-key
-provenance. Teacher-generated components contain concise semantic state summaries rather than private
-chain-of-thought transcripts. Physical slot placement and event timing are schedule variables rather
-than teacher outputs.
+provenance. Teacher-generated components contain concise semantic state summaries; private
+chain-of-thought transcripts are excluded. Physical slot placement and event timing are schedule variables; they are not produced by the teacher.
 
 \subsection{Initial Stage-A Prototype Optimization}
 
@@ -294,7 +293,7 @@ $\Delta_{\mathrm{assim}}=t_{\mathrm{correct\ state}}-t_{\mathrm{arrival}}$. Qual
 a logical event clock so accelerator speed cannot change pre-arrival refinement; matched-hardware
 wall-clock measurements are reported separately.
 
-Controlled runtime analyses reuse the same final checkpoint rather than training separate weakened
+Controlled runtime analyses reuse the same final checkpoint and avoid training separate weakened
 models. They compare asynchronous against forced-blocking execution, persistent re-projection against
 one-time percept injection, need-conditioned refresh against no refresh, cache reuse against forced
 re-execution, and multiple source-latency schedules. These interventions isolate runtime behavior at
