@@ -1,65 +1,40 @@
 \section{Evaluation}
 \label{sec:experiments}
 
-We separate \emph{mechanism feasibility} from final task quality. RQ1 keeps the first completed Stage-A checkpoint (\textbf{StageA-v0}) because its failure is diagnostic: several CID interaction heads are learned, but the original runtime cannot reach them reliably. RQ2 and later experiments instead use a model retrained from the same base after correcting the identified train--runtime inconsistencies. Full hyperparameters, data composition, checkpoint identity, and raw traces appear in \cref{app:reproducibility} and the public artifact.\footnote{\url{https://huggingface.co/fwerkor/CID-RQ1-StageA-v0}}
+All formal performance results are defined on the corrected CID model retrained from the pinned iLLaDA base checkpoint. We organize evaluation around three properties that follow directly from the architecture: end-to-end tool-augmented task quality, the ability to overlap useful model computation with external latency, and the ability to assimilate delayed or changing evidence by revising already formed state. We additionally use controlled runtime interventions that require no separately retrained ablation models. Full data, optimization, checkpoint, and timing details are given in \cref{app:reproducibility}.
 
-\subsection{Research Questions}
+\subsection{Model and Evaluation Setup}
+\label{sec:evaluation-setup}
 
-\paragraph{RQ1: Is the CID interaction mechanism learnable?}
-Measure information-need, source, argument, binding, observation, and projection behavior in StageA-v0, separating learned heads from runtime materialization.
+The final model is trained in two stages. Stage A freezes the iLLaDA backbone and learns CID-specific channel projections, external-perception fusion, and prediction heads. Stage B then unfreezes the backbone and continues optimization under the same corrected train--runtime contract. The final checkpoint used for evaluation is fixed before benchmark results are collected; engineering smoke runs and pre-fix checkpoints are excluded from the reported comparisons.
 
-\paragraph{RQ2: Does a consistent train--runtime contract yield reliable end-to-end CID?}
-Retrain from the base model after the RQ1 fixes, then measure tool recall, observation coverage, convergence, and final answer quality without diagnostic intervention.
+\paragraph{Early-stage diagnostic.}
+During development, an initial frozen-backbone prototype learned several downstream interaction components but failed to materialize new cognitive cells reliably in the unmodified runtime. Teacher-forced probes selected the correct source on 165/165 supervised decisions and produced strong argument representations, while positive allocation probabilities averaged only 0.110 and none of 219 positives reached the then-used 0.8 runtime threshold. A diagnostic allocation intervention that changed no model weights restored the complete need$\rightarrow$binding$\rightarrow$tool$\rightarrow$observation$\rightarrow$projection path on 29/32 held-out NQ-Open cases at the original 128-slot geometry and 30/32 with training-aligned eight-slot geometry. This isolated three train--runtime mismatches: supervision of arbitrary randomized physical slots, capacity-dependent logical positions, and variable-length display supervision against a fixed runtime canvas. We corrected these contracts and restarted training from the base model rather than treating the diagnostic prototype as a performance result. Detailed traces and the original checkpoint are retained only as supplementary diagnostic artifacts.
 
-\paragraph{RQ3: Can persistent bindings hide external latency?}
-Vary source latency at fixed logical model compute and compare end-to-end latency at matched answer quality.
+\subsection{End-to-End Tool-Augmented Performance}
+\label{sec:end-to-end-evaluation}
 
-\paragraph{RQ4: Does repeated perception improve assimilation?}
-Compare one-time injection, cached re-projection, fixed polling, and need-conditioned refresh on static and dynamic sources.
+The primary evaluation asks whether the corrected model can complete tool-augmented tasks reliably without diagnostic intervention. We report final-answer correctness together with tool-use precision and recall, observation coverage, stale-observation rate, convergence, and unsupported-tool-call frequency. The benchmark suite combines natural open-domain and multi-document tasks with CID-specific cases that require delayed evidence, explicit tool restraint, compositional reasoning, and persistent source use. Public-source evaluation splits are disjoint from the corresponding training splits.
 
-\paragraph{RQ5: Is the Typed Cognitive Tensor necessary?}
-Compare natural-language thought, untyped latent state, and the proposed \tct on accuracy, binding stability, grounding, revision locality, and inspectability.
+Comparisons include conventional explicit-call dLLM execution and strong autoregressive tool-using systems using the same available sources where possible. For end-to-end quality comparisons, each system receives the same task input and source contents; latency-dependent experiments are separated below so hardware speed does not contaminate task correctness.
 
-\paragraph{RQ6: Is diffusion essential?}
-Compare CID with an asynchronous autoregressive model using matched sources, data, and approximate compute; gains must come from revisability, not asynchronous I/O alone.
+\subsection{Asynchronous Interaction Efficiency}
+\label{sec:async-efficiency}
 
-\subsection{RQ1: StageA-v0 Mechanism Study}
-\label{sec:rq1}
+CID is intended to convert part of external waiting time into useful refinement. We therefore replay the same tasks under controlled source delays and compare end-to-end latency at matched answer quality. The main measurements are wall-clock completion time, tool-wait overlap, the amount of model work performed while I/O is outstanding, duplicate external execution, and the fraction of pre-arrival computation that remains useful after evidence arrives.
 
-\paragraph{Protocol.}
-StageA-v0 freezes the iLLaDA-8B backbone and trains 453.8M CID-specific parameters. We use 32 deterministic Natural Questions examples from the pinned official \texttt{nq\_open} \emph{validation} parquet; CID training uses only the upstream NQ-Open train split. Each probe requires one \texttt{knowledge\_search} observation. Evaluation uses four denoising updates per runtime step and a 16-step cap. The original runtime has a 128-slot TCT and allocation threshold 0.8. A diagnostic materializer then changes no weights: if no allocation crosses the threshold, it selects one bootstrap candidate and subsequently the highest-need eligible empty slot. We test this fallback at both the original 128-slot geometry and the typical eight-slot NQ training geometry.
+The key controlled comparison uses the same CID checkpoint in asynchronous and forced-blocking runtime modes, avoiding a retraining confound. We additionally compare against blocking and asynchronous autoregressive tool execution when an equivalent source interface is available. Quality comparisons use a logical event clock, while wall-clock results are reported on matched hardware.
 
-\begin{table}[t]
-  \centering
-  \caption{RQ1 on 32 held-out NQ-Open examples. Diagnostic rows change no model weights. ``Obs.'' is fresh-observation coverage; ``Proj.'' denotes cognitive projection.}
-  \label{tab:rq1-mechanism}
-  \resizebox{\columnwidth}{!}{%
-  \begin{tabular}{lrrrr}
-    \toprule
-    Condition & Tool & Obs. & Proj. & Conv. \\
-    \midrule
-    StageA-v0, original & 0/32 & 0/32 & 0/32 & 0/32 \\
-    + allocation fallback, 128 slots & 29/32 & 29/32 & 29/32 & 24/32 \\
-    + allocation fallback, 8 slots & 30/32 & 30/32 & 30/32 & 28/32 \\
-    \bottomrule
-  \end{tabular}}
-\end{table}
+\subsection{Continuous Assimilation and Revision}
+\label{sec:continuous-revision}
 
-\paragraph{Results.}
-Teacher-forced diagnosis shows a sharp separation. Across 219 positive allocation targets, mean allocation probability is 0.110 and 0/219 reaches the runtime threshold of 0.8. In contrast, 165 positive information-need decisions average 0.741; source selection is correct in 165/165 cases; required-argument presence averages 0.99994; and argument-grounding cosine similarity averages 0.817. This explains the end-to-end contrast in \cref{tab:rq1-mechanism}: changing only allocation selection at 128 slots recovers the complete need$\rightarrow$binding$\rightarrow$tool$\rightarrow$observation$\rightarrow$projection path on 29/32 cases, and matching the common eight-slot training geometry raises this to 30/32. Allocation semantics are therefore the dominant blocker, while geometry is a smaller additional mismatch.
+To test the specifically diffusion-native claim, we construct cases in which useful evidence arrives after partial cognition or display content has formed, changes during generation, or is delivered incrementally. Static-source cases distinguish one-time injection from persistent cognitive re-projection. Dynamic-source cases change the authoritative value during the trajectory, and streaming cases reveal increasingly informative evidence chunks.
 
-\paragraph{Failure analysis.}
-RQ1 exposed three contract defects:
-\begin{enumerate}[leftmargin=*,nosep]
-  \item teacher schedules randomize physical TCT slots, while StageA-v0 applies exact per-slot BCE to the random slot, making the physical label unidentifiable from semantics;
-  \item common NQ training tensors use eight thought positions while the default runtime presents 128, shifting prompt/display logical positions by roughly 120 positions;
-  \item training allows intermediate display targets to change token length, whereas runtime \texttt{DisplayCanvas} length is fixed.
-\end{enumerate}
-The display head is also undertrained: even with the correct percept teacher-forced, exact final-display recovery is only 1--4/32 across tested diffusion times. A strict ten-case compositional holdout obtains 6/10 exact, so StageA-v0 is not a dead checkpoint, but it is not an end-to-end QA result. We therefore answer RQ1 narrowly and positively---the interaction chain is learnable---while retaining the systems failure as a negative finding.
+We measure stale-value rate, observation-to-correction lag, the fraction of affected thought/display regions revised after arrival, preservation of unrelated state, and final correctness. A successful system should revise evidence-dependent regions without restarting the trajectory or repeatedly executing an unchanged source.
 
-\subsection{RQ2 Boundary: Corrected Retraining}
-\label{sec:rq2}
+\subsection{Controlled Runtime Analysis}
+\label{sec:runtime-analysis}
 
-RQ2 starts from the base model again, not StageA-v0. The corrected contract removes arbitrary physical-slot identity from allocation, makes logical positions independent of unused TCT capacity, and represents display as a fixed physical budget with explicit realized-length/termination semantics. Stage A is retrained first; only then is the backbone unfrozen for Stage B. Final RQ2 hyperparameters are frozen from checkpoint metadata before RQ2--RQ6 results are accepted, so pre-fix Stage-B smoke runs are not counted as experiments.
+Rather than train a collection of weakened models, we isolate runtime behavior with interventions that reuse the same final checkpoint: asynchronous versus blocking execution, persistent re-projection versus one-time percept injection, need-conditioned refresh versus no refresh, cache reuse versus forced re-execution, and alternative source-latency schedules. These controls directly test whether CID's runtime mechanisms provide the intended behavior without multiplying training cost.
 
-The complete RQ3--RQ6 task families, baselines, metrics, timing definitions, and ablations are specified in \cref{app:reproducibility}. CID is falsified if corrected retraining still yields unreliable bindings, post-arrival revision destroys more correct state than it repairs, waiting-time computation is mostly discarded, or a matched asynchronous AR baseline reaches the same quality and latency with lower complexity. RQ1 already demonstrates that a semantically arbitrary physical-slot objective can block an otherwise useful interaction policy.
+The broader CID hypothesis remains falsifiable. The architecture is not supported if the corrected model cannot bind tools reliably, if asynchronous computation is mostly discarded after observations arrive, if revision damages more correct state than it repairs, or if simpler explicit-call or asynchronous autoregressive systems match quality and latency with lower complexity.
