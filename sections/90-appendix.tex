@@ -159,7 +159,7 @@ For reproducibility of the development diagnostic, the checkpoint and raw traces
 
 \subsection{CID-Dataset Training Corpus}
 
-The diagnostic prototype and corrected retraining draw from the released \texttt{fwerkor/CID-Dataset} semantic mixture; the corrected run changes tensorization and train--runtime contracts rather than the underlying semantic examples. The materialized JSONL is
+The diagnostic prototype and corrected retraining draw from the released \texttt{fwerkor/CID-Dataset} semantic mixture~\cite{cao2026ciddataset}; the corrected run changes tensorization and train--runtime contracts rather than the underlying semantic examples. The materialized JSONL is
 8,379,022,223 bytes and contains 192,297 semantic tasks expanded into 421,798 trajectories. There are
 2,589,664 adjacent snapshot transitions plus 421,798 virtual empty-state bootstrap transitions, for
 3,011,462 trainable transitions. Maximum trajectory length is 44 snapshots and the maximum required
