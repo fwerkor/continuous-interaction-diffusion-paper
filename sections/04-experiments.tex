@@ -1,84 +1,65 @@
-\section{Evaluation Protocol}
+\section{Evaluation}
 \label{sec:experiments}
 
-This paper does not claim empirical performance results. We specify the minimum evidence required to support or reject the CID hypothesis and define how the complete model--runtime system should be evaluated beyond token-generation speed.
+We separate \emph{mechanism feasibility} from final task quality. RQ1 keeps the first completed Stage-A checkpoint (\textbf{StageA-v0}) because its failure is diagnostic: several CID interaction heads are learned, but the original runtime cannot reach them reliably. RQ2 and later experiments instead use a model retrained from the same base after correcting the identified train--runtime inconsistencies. Full hyperparameters, data composition, checkpoint identity, and raw traces appear in \cref{app:reproducibility} and the public artifact.\footnote{\url{https://huggingface.co/fwerkor/CID-RQ1-StageA-v0}}
 
 \subsection{Research Questions}
 
-\paragraph{RQ1: Do Useful Information Needs Emerge Before Explicit Calls?}
-Measure the earliest diffusion step at which the typed intent interface correctly identifies source type and information target. Compare it with the step at which a valid textual or JSON call becomes executable. CID is useful only if latent need detection provides a meaningful lead without excessive false bindings.
+\paragraph{RQ1: Is the CID interaction mechanism learnable?}
+Measure information-need, source, argument, binding, observation, and projection behavior in StageA-v0, separating learned heads from runtime materialization.
 
-\paragraph{RQ2: Can Persistent Bindings Hide External Latency?}
-Vary source latency while holding model compute fixed. Use a logical event clock for quality comparisons so accelerator speed cannot change pre-arrival refinement, and report wall-clock latency separately on matched hardware. Measure whether waiting-time computation remains useful after arrival. The central comparison is end-to-end latency at matched answer quality.
+\paragraph{RQ2: Does a consistent train--runtime contract yield reliable end-to-end CID?}
+Retrain from the base model after the RQ1 fixes, then measure tool recall, observation coverage, convergence, and final answer quality without diagnostic intervention.
 
-\paragraph{RQ3: Does Repeated Perception Improve Assimilation?}
-For static sources, compare one-time injection with per-step cognitive re-projection. For dynamic sources, compare no refresh, fixed polling, and need-conditioned refresh. Tasks should test exact copying, evidence application, stale-value avoidance, and revision of already formed output.
+\paragraph{RQ3: Can persistent bindings hide external latency?}
+Vary source latency at fixed logical model compute and compare end-to-end latency at matched answer quality.
 
-\paragraph{RQ4: Is the Typed Cognitive Tensor Necessary?}
-Compare (i) a natural-language thought string, (ii) an untyped continuous latent tensor, and (iii) the proposed \tct. Measure accuracy, source-binding stability, symbolic-reference precision, locality of revision, and runtime inspectability.
+\paragraph{RQ4: Does repeated perception improve assimilation?}
+Compare one-time injection, cached re-projection, fixed polling, and need-conditioned refresh on static and dynamic sources.
 
-\paragraph{RQ5: Is Diffusion Essential?}
-Compare CID against an asynchronous autoregressive model with the same sources, training data, and approximate compute budget. A convincing result must show a benefit from revising prior cognition or display regions, rather than from asynchronous I/O alone.
+\paragraph{RQ5: Is the Typed Cognitive Tensor necessary?}
+Compare natural-language thought, untyped latent state, and the proposed \tct on accuracy, binding stability, grounding, revision locality, and inspectability.
 
-\subsection{Task Families}
+\paragraph{RQ6: Is diffusion essential?}
+Compare CID with an asynchronous autoregressive model using matched sources, data, and approximate compute; gains must come from revisability, not asynchronous I/O alone.
 
-\paragraph{Static Reference and Copying.}
-The model reads a fixed document, table, or code fragment and must repeatedly preserve exact values while composing a longer response. This directly tests the distinction between repeated external execution and repeated cognitive refresh.
+\subsection{RQ1: StageA-v0 Mechanism Study}
+\label{sec:rq1}
 
-\paragraph{Dynamic State Tracking.}
-A source changes during generation: current time, a key--value entry, a file version, remaining token budget, or realized display length. The final output must reflect the latest value and revise stale intermediate conclusions.
+\paragraph{Protocol.}
+StageA-v0 freezes the iLLaDA-8B backbone and trains 453.8M CID-specific parameters. We use 32 deterministic Natural Questions examples from the pinned official \texttt{nq\_open} \emph{validation} parquet; CID training uses only the upstream NQ-Open train split. Each probe requires one \texttt{knowledge\_search} observation. Evaluation uses four denoising updates per runtime step and a 16-step cap. The original runtime has a 128-slot TCT and allocation threshold 0.8. A diagnostic materializer then changes no weights: if no allocation crosses the threshold, it selects one bootstrap candidate and subsequently the highest-need eligible empty slot. We test this fallback at both the original 128-slot geometry and the typical eight-slot NQ training geometry.
 
-\paragraph{Delayed Retrieval.}
-Question answering tasks provide a retriever whose results arrive after controlled delays. Some answer regions can be prepared without evidence; others must remain unresolved until retrieval arrives.
+\begin{table}[t]
+  \centering
+  \caption{RQ1 on 32 held-out NQ-Open examples. Diagnostic rows change no model weights. ``Obs.'' is fresh-observation coverage; ``Proj.'' denotes cognitive projection.}
+  \label{tab:rq1-mechanism}
+  \resizebox{\columnwidth}{!}{%
+  \begin{tabular}{lrrrr}
+    \toprule
+    Condition & Tool & Obs. & Proj. & Conv. \\
+    \midrule
+    StageA-v0, original & 0/32 & 0/32 & 0/32 & 0/32 \\
+    + allocation fallback, 128 slots & 29/32 & 29/32 & 29/32 & 24/32 \\
+    + allocation fallback, 8 slots & 30/32 & 30/32 & 30/32 & 28/32 \\
+    \bottomrule
+  \end{tabular}}
+\end{table}
 
-\paragraph{Streaming Evidence.}
-A source emits increasingly informative chunks. The model should revise hypotheses incrementally instead of waiting for the complete result or restarting generation after every chunk.
+\paragraph{Results.}
+Teacher-forced diagnosis shows a sharp separation. Across 219 positive allocation targets, mean allocation probability is 0.110 and 0/219 reaches the runtime threshold of 0.8. In contrast, 165 positive information-need decisions average 0.741; source selection is correct in 165/165 cases; required-argument presence averages 0.99994; and argument-grounding cosine similarity averages 0.817. This explains the end-to-end contrast in \cref{tab:rq1-mechanism}: changing only allocation selection at 128 slots recovers the complete need$\rightarrow$binding$\rightarrow$tool$\rightarrow$observation$\rightarrow$projection path on 29/32 cases, and matching the common eight-slot training geometry raises this to 30/32. Allocation semantics are therefore the dominant blocker, while geometry is a smaller additional mismatch.
 
-\paragraph{Competing Sources.}
-Multiple bindings expose complementary or conflicting facts. This setting tests source links, uncertainty, repeated verification, and local reopening of cognition.
+\paragraph{Failure analysis.}
+RQ1 exposed three contract defects:
+\begin{enumerate}[leftmargin=*,nosep]
+  \item teacher schedules randomize physical TCT slots, while StageA-v0 applies exact per-slot BCE to the random slot, making the physical label unidentifiable from semantics;
+  \item common NQ training tensors use eight thought positions while the default runtime presents 128, shifting prompt/display logical positions by roughly 120 positions;
+  \item training allows intermediate display targets to change token length, whereas runtime \texttt{DisplayCanvas} length is fixed.
+\end{enumerate}
+The display head is also undertrained: even with the correct percept teacher-forced, exact final-display recovery is only 1--4/32 across tested diffusion times. A strict ten-case compositional holdout obtains 6/10 exact, so StageA-v0 is not a dead checkpoint, but it is not an end-to-end QA result. We therefore answer RQ1 narrowly and positively---the interaction chain is learnable---while retaining the systems failure as a negative finding.
 
-\subsection{Baselines}
+\subsection{RQ2 Boundary: Corrected Retraining}
+\label{sec:rq2}
 
-A minimal comparison should include:
-\begin{itemize}[leftmargin=*]
-  \item autoregressive ReAct with blocking tools;
-  \item an event-driven asynchronous autoregressive agent \citep{ginart2024asynchronous,hooper2026realtime};
-  \item a dLLM using conventional explicit tool-call regions;
-  \item P-ReAct as instantiated by DLLM-Searcher \citep{zhao2026dllmsearcher};
-  \item CID with one-time percept injection;
-  \item CID with persistent static re-projection;
-  \item full CID with static and dynamic refresh;
-  \item oracle bindings and arrival-aware local-noise updates as upper bounds.
-\end{itemize}
+RQ2 starts from the base model again, not StageA-v0. The corrected contract removes arbitrary physical-slot identity from allocation, makes logical positions independent of unused TCT capacity, and represents display as a fixed physical budget with explicit realized-length/termination semantics. Stage A is retrained first; only then is the backbone unfrozen for Stage B. Final RQ2 hyperparameters are frozen from checkpoint metadata before RQ2--RQ6 results are accepted, so pre-fix Stage-B smoke runs are not counted as experiments.
 
-\subsection{Metrics}
-
-\paragraph{Task Quality.}
-Use exact match, factual accuracy, evidence support, copying fidelity, and task-specific correctness. For dynamic sources, report stale-value rate.
-
-\paragraph{Interaction Latency.}
-Report wall-clock latency, tool-wait overlap, and \emph{intent lead time}
-\begin{equation}
-  \Delta_{\mathrm{lead}} = t_{\mathrm{explicit\ call}} - t_{\mathrm{binding}}.
-\end{equation}
-
-\paragraph{Assimilation.}
-Define observation assimilation lag as
-\begin{equation}
-  \Delta_{\mathrm{assim}} = t_{\mathrm{correct\ state}} - t_{\mathrm{arrival}}.
-\end{equation}
-Also measure the number and fraction of thought and display regions revised after arrival.
-
-\paragraph{Binding Behavior.}
-Report binding precision and recall, persistence duration, external refresh count, cache-hit rate, repeated cognitive projection count, and the fraction of duplicate needs handled without duplicate I/O.
-
-\paragraph{Revision Quality.}
-Measure the ratio of corrected errors to newly introduced errors, preservation of unaffected content, and the compute cost of local reopening. These metrics test whether diffusion revision is selective rather than destructive.
-
-\subsection{Key Ablations}
-
-A full evaluation should remove role typing, symbolic anchors, source links, per-cell noise levels, persistent bindings, static re-projection, dynamic source refresh, and display-to-thought feedback. Arrival-time randomization during training should also be ablated to determine whether the system learns genuine asynchronous assimilation or overfits a fixed event schedule.
-
-\subsection{Falsification Criteria}
-
-CID would not be supported if latent bindings do not reliably precede explicit calls, if post-arrival revision destroys more correct state than it repairs, if waiting-time computation is mostly discarded, or if an asynchronous autoregressive baseline matches quality and latency with lower complexity. These outcomes constitute substantive negative results for the CID hypothesis.
+The complete RQ3--RQ6 task families, baselines, metrics, timing definitions, and ablations are specified in \cref{app:reproducibility}. CID is falsified if corrected retraining still yields unreliable bindings, post-arrival revision destroys more correct state than it repairs, waiting-time computation is mostly discarded, or a matched asynchronous AR baseline reaches the same quality and latency with lower complexity. RQ1 already demonstrates that a semantically arbitrary physical-slot objective can block an otherwise useful interaction policy.

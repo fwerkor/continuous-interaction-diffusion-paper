@@ -19,6 +19,7 @@ This paper formalizes the architecture and makes the design precise enough to im
   \item We introduce a three-channel architecture with an externally controlled fact channel, a typed continuous thought channel, and a discrete display channel.
   \item We define persistent perceptual bindings that distinguish repeated cognitive refresh from repeated external execution, supporting both static and changing information sources.
   \item We specify an asynchronous runtime, local diffusion clocks, model-side intent interface, training objectives, and a concrete evaluation protocol for read-only tools.
+  \item We report a first Stage-A mechanism study. The original end-to-end runtime fails to materialize tool needs; a no-weight-change allocation intervention recovers the complete need-to-percept path on 29/32 held-out NQ examples at the original geometry and 30/32 with training-aligned geometry, isolating three train--runtime contract defects that are corrected before later evaluation.
 \end{itemize}
 
-The remainder of the paper reviews the necessary background and derives the design requirements in \cref{sec:background}, formalizes \cid in \cref{sec:method}, specifies an empirical evaluation protocol in \cref{sec:experiments}, relates the architecture to prior work in \cref{sec:related-work}, and discusses limitations in \cref{sec:discussion}.
+The remainder of the paper reviews the necessary background and derives the design requirements in \cref{sec:background}, formalizes \cid in \cref{sec:method}, reports the RQ1 mechanism study and defines the corrected RQ2--RQ6 evaluation in \cref{sec:experiments}, relates the architecture to prior work in \cref{sec:related-work}, and discusses limitations in \cref{sec:discussion}.

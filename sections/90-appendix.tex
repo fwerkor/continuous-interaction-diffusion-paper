@@ -140,6 +140,174 @@ A practical initial dataset can be synthesized from ordinary question--answer pa
 
 Teacher-generated textual reasoning may be encoded into initial cognitive cells, but training should randomize cell ordering and event schedules to avoid reducing the thought tensor to a disguised text chain.
 
+\section{Experimental Reproducibility}
+\label{app:reproducibility}
+
+\subsection{Model, Code, and Checkpoint Identity}
+
+RQ1 uses \texttt{GSAI-ML/iLLaDA-8B-Base} at revision
+\texttt{a1b5b5f8a31a3854a46205ee584178c04b45ec9a}. The StageA-v0 training code is pinned to commit
+\texttt{a1396c79279b2aa024af1f97dad9130472c2dc25}. The frozen 8B backbone is reused for token
+embeddings, the bidirectional decoder, and the native LM head; CID contributes trainable channel
+projections, external-perception fusion, and prediction heads. The final StageA-v0 checkpoint contains
+53 trainable tensors totaling 453,841,081 parameters. Its recorded state is 282,536 optimizer steps,
+3,400,565 processed training transitions, and three completed epochs. The compact inference checkpoint
+has SHA-256
+\texttt{d9e33c65b4316b9c8acea93a53ebdf90}\allowbreak\texttt{afcf8d419d5c973c7d84dbc7ddb3b9c5}.
+The checkpoint and all RQ1 raw artifacts are released at
+\url{https://huggingface.co/fwerkor/CID-RQ1-StageA-v0}.
+
+\subsection{CID-Dataset Training Corpus}
+
+StageA-v0 is trained on the released \texttt{fwerkor/CID-Dataset} mixture. The materialized JSONL is
+8,379,022,223 bytes and contains 192,297 semantic tasks expanded into 421,798 trajectories. There are
+2,589,664 adjacent snapshot transitions plus 421,798 virtual empty-state bootstrap transitions, for
+3,011,462 trainable transitions. Maximum trajectory length is 44 snapshots and the maximum required
+TCT capacity is 128. The materialized file SHA-256 recorded by the release manifest is
+\texttt{bec927029445815f085f5597ac1e4519}\allowbreak\texttt{6e8c64995793e218bc7f73df52eb8492}.
+Semantic-task balancing is applied before component weights, and the global transition-weight mean is
+normalized to one. Of the 192,297 semantic tasks, 134,750 (70.07\%) require tools, 43,933 (22.85\%)
+require no tool, and 13,614 (7.08\%) expose tools that are unnecessary. The latter two groups provide
+negative supervision against indiscriminate tool use.
+
+\begin{table*}[t]
+  \centering
+  \caption{CID-Dataset components used by StageA-v0. ``Tasks'' are semantic tasks before schedule expansion; ``Traj.'' are materialized trajectories; ``Train trans.'' includes each component's bootstrap transitions. Weight is the semantic component multiplier applied after per-task balancing.}
+  \label{tab:dataset-components}
+  \scriptsize
+  \begin{tabular}{lrrrr}
+    \toprule
+    Component & Tasks & Traj. & Train trans. & Weight \\
+    \midrule
+    public-base & 8,512 & 34,048 & 75,596 & 2.0 \\
+    public-interaction & 7,590 & 30,360 & 430,834 & 2.5 \\
+    mechanism & 10,000 & 40,000 & 214,287 & 1.0 \\
+    computational & 12,000 & 24,000 & 135,339 & 1.0 \\
+    symbolic & 15,600 & 31,200 & 153,104 & 1.0 \\
+    correction & 10,000 & 20,000 & 140,220 & 1.0 \\
+    complex-logic & 12,000 & 24,000 & 144,000 & 1.0 \\
+    self-identity & 720 & 1,440 & 2,880 & 1.0 \\
+    multilingual & 1,200 & 2,400 & 21,725 & 1.0 \\
+    composed & 12,000 & 24,000 & 261,058 & 1.0 \\
+    tool-restraint & 6,500 & 6,500 & 6,500 & 1.5 \\
+    compositional-longtail & 20,000 & 40,000 & 220,000 & 1.0 \\
+    long-horizon & 12,000 & 24,000 & 471,626 & 1.0 \\
+    deep-tool-restraint & 4,000 & 4,000 & 26,000 & 1.5 \\
+    natural-interaction & 8,675 & 17,350 & 182,059 & 2.0 \\
+    natural-public/nq-open & 30,000 & 60,000 & 330,121 & 1.0 \\
+    natural-public/oasst1 & 4,500 & 4,500 & 9,000 & 1.5 \\
+    natural-public/multidoc2dial & 15,000 & 30,000 & 165,171 & 1.5 \\
+    natural-public/qasper & 2,000 & 4,000 & 21,942 & 2.0 \\
+    \midrule
+    Total & 192,297 & 421,798 & 3,011,462 & -- \\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+The natural-public subset contributes 30,000 NQ-Open train tasks (CC-BY-SA-3.0), 4,500 OASST1 train
+tasks (Apache-2.0), 15,000 MultiDoc2Dial train tasks (CC-BY-3.0), and 2,000 QASPER train tasks
+(CC-BY-4.0). Public-source rows retain upstream repository, revision, split, license, and row-key
+provenance. Teacher-generated components contain concise semantic state summaries rather than private
+chain-of-thought transcripts. Physical slot placement and event timing are schedule variables rather
+than teacher outputs.
+
+\subsection{StageA-v0 Optimization}
+
+\begin{table}[h]
+  \centering
+  \caption{StageA-v0 optimization and model limits. The effective global batch is held at 32 when the run is resumed with fewer GPUs.}
+  \label{tab:stagea-hparams}
+  \scriptsize
+  \begin{tabular}{ll}
+    \toprule
+    Setting & Value \\
+    \midrule
+    Optimizer & AdamW \\
+    Peak learning rate & $1\times10^{-4}$ \\
+    Weight decay & 0.01 \\
+    Precision & bfloat16 \\
+    Micro-batch / GPU & 1 \\
+    Effective global batch & 32 \\
+    Gradient accumulation & 8 (4 GPUs), 16 (2 GPUs) \\
+    Epochs & 3 \\
+    Warmup steps & 2,000 \\
+    LR decay steps & 285,000 \\
+    Minimum LR ratio & 0.1 \\
+    Gradient-norm clip & 1.0 \\
+    Diffusion $t$ range & $[0.05,1.0]$ \\
+    Rollout horizon & 3 \\
+    Teacher-forcing epochs & 1 \\
+    Rollout-ramp epochs & 2 \\
+    Maximum TCT slots & 128 \\
+    Maximum display tokens & 1,024 \\
+    Runtime allocation threshold & 0.8 \\
+    Runtime need threshold & 0.6 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+StageA-v0 was run with data-parallel RTX A6000 48\,GB GPUs and resumed across world sizes while
+preserving effective batch 32. The final phase used two GPUs with gradient accumulation 16; earlier
+four-GPU phases used accumulation 8. The backbone parameters have \texttt{requires\_grad=False}, but
+the forward and input-gradient path still traverses the full decoder because CID projections precede
+it. Thus Stage A is materially cheaper in optimizer state and parameter-gradient computation than
+Stage B, but it is not equivalent to training only a small standalone 454M network.
+
+The loss weights in StageA-v0 are: thought 1.0, display 1.0, convergence 0.2, allocation 0.3,
+roles 0.2, uncertainty 0.1, local-noise delta 0.1, lifecycle 0.1, information-need intent 0.5,
+source selection 0.5, argument presence 0.1, argument grounding 0.2, revision 0.2, refresh 0.2,
+anchor presence/kind/grounding 0.1/0.1/0.2, and link presence/relation/target-kind/grounding
+0.1/0.1/0.1/0.2. Allocation uses masked binary cross-entropy over currently empty physical slots;
+this exact formulation is the RQ1 defect analyzed in \cref{sec:rq1}.
+
+\subsection{RQ1 Held-Out Protocol}
+
+The RQ1 NQ set contains 32 rows sampled with seed 20260824 from
+\texttt{google-research-datasets/nq\_open}, revision
+\texttt{5dd9790a83002ad084ddeb7c420dc716852c6f28}, file
+\texttt{nq\_open/validation-00000-of-00001.parquet}. Training uses the upstream train split only.
+Each held-out trajectory has one \texttt{knowledge\_search} evidence event with a randomized one-to-three
+step delay and an eight-slot teacher schedule. The default-runtime control uses 128 TCT slots, four
+denoising iterations per runtime update, and a 16-step cap. Diagnostic runs use the same weights,
+source replay, argument catalog, denoising budget, and task set. Runs are executed in bfloat16 on RTX
+3090 24\,GB GPUs, one model replica per probe job. Raw outputs, the exact held-out JSONL, registry,
+validation scripts, aggregate summary, and SHA-256 manifest are included in the public RQ1 artifact.
+
+We additionally use a ten-task compositional generalization probe with zero exact logic-spec overlap
+with training. This probe spans boolean, graph, spatial, causal, ordering, quantifier, candidate,
+numeric, policy, and repair tasks and is used only as a checkpoint-health control, not as a general
+benchmark claim.
+
+\subsection{RQ3--RQ6 Protocol}
+
+Task families cover static reference/copying, dynamic state tracking, delayed retrieval, streaming
+evidence, and competing sources. Baselines include blocking ReAct; an event-driven asynchronous AR
+agent \citep{ginart2024asynchronous,hooper2026realtime}; a dLLM with conventional explicit-call
+regions; P-ReAct/DLLM-Searcher \citep{zhao2026dllmsearcher}; one-time CID percept injection;
+persistent static re-projection; full CID with static/dynamic refresh; and oracle bindings as an
+upper bound.
+
+We report exact/task-specific correctness, evidence support, copying fidelity, stale-value rate,
+wall-clock latency, tool-wait overlap, binding precision/recall, cache hits, external refreshes,
+duplicate-I/O suppression, repeated cognitive projection, and revision locality. Intent lead time is
+$\Delta_{\mathrm{lead}}=t_{\mathrm{explicit\ call}}-t_{\mathrm{binding}}$, and assimilation lag is
+$\Delta_{\mathrm{assim}}=t_{\mathrm{correct\ state}}-t_{\mathrm{arrival}}$. Quality comparisons use
+a logical event clock so accelerator speed cannot change pre-arrival refinement; matched-hardware
+wall-clock measurements are reported separately. Ablations remove role typing, symbolic anchors,
+source links, per-cell noise, persistent bindings, static re-projection, dynamic refresh,
+display-to-thought feedback, and arrival-time randomization. Where meaningful, the three RQ1
+contract defects are retained as explicit negative ablations rather than disappearing after repair.
+
+\subsection{RQ2 and Stage B Reporting Rule}
+
+RQ2 retrains Stage A from the pinned base model after the contract fixes described in
+\cref{sec:rq2}; it does not initialize from StageA-v0. Stage B then unfreezes the backbone and uses
+FSDP/AdamW. To avoid reporting stale pilot settings as final hyperparameters, the RQ2--RQ6 table is
+populated only from the frozen retrained checkpoint metadata after the run completes. The earlier
+pre-fix Stage-B smoke/stress runs are engineering tests and are excluded from experimental results.
+This rule is important because the RQ1 findings can change the optimal capacity, display, and
+allocation settings.
+
 \section{Open Technical Questions}
 \label{app:questions}
 
