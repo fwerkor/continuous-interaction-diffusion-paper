@@ -106,10 +106,10 @@ A candidate binding should record:
 \begin{itemize}[leftmargin=*]
   \item source probability and need confidence;
   \item partially bound selector or arguments;
-  \item links to originating cognitive cells;
+  \item a stable owning cognitive cell and learned links to additional affected TCT/display regions;
   \item current cache key and source version;
   \item external and cognitive refresh policies;
-  \item target fact, thought, and display regions.
+  \item runtime-owned permission for whether returned values are promoted to the protected fact channel.
 \end{itemize}
 
 \section{Conceptual Execution Traces}
@@ -133,7 +133,8 @@ A retrieval source first returns titles, then snippets, then complete passages. 
 A practical initial dataset can be synthesized from ordinary question--answer pairs and documents:
 \begin{enumerate}[leftmargin=*]
   \item identify answer spans that depend on external evidence and hide those spans from the model-visible prompt;
-  \item create source descriptors, binding targets, and delayed or incremental arrival schedules;
+  \item create source descriptors, binding targets, delayed or incremental arrival schedules, and source-level protected-result policy;
+  \item annotate each need with one stable owner and any additional thought/display regions that should receive its percept;
   \item construct pre-arrival states with unresolved cells and post-arrival revisions grounded in the source;
   \item add static-copy cases that preserve one value across many steps and dynamic cases in which the source changes before display convergence.
 \end{enumerate}
@@ -159,12 +160,12 @@ For reproducibility of the development diagnostic, the checkpoint and raw traces
 
 \subsection{CID-Dataset Training Corpus}
 
-The diagnostic prototype and corrected retraining draw from the released \texttt{fwerkor/CID-Dataset} semantic mixture~\cite{cao2026ciddataset}; the corrected run keeps the underlying semantic examples fixed while changing tensorization and train--runtime contracts. The materialized JSONL is
+The diagnostic prototype and corrected retraining draw from the released \texttt{fwerkor/CID-Dataset} semantic mixture~\cite{cao2026ciddataset}. The underlying tasks, prompts, evidence, and answers are kept fixed across the contract correction, while the corrected materialization may add contract-level supervision such as a stable information-need owner, additional affected TCT cells, affected display regions, and source-level protected-result policy. The pre-v3 release materialization is
 8,379,022,223 bytes and contains 192,297 semantic tasks expanded into 421,798 trajectories. There are
 2,589,664 adjacent snapshot transitions plus 421,798 virtual empty-state bootstrap transitions, for
 3,011,462 trainable transitions. Maximum trajectory length is 44 snapshots and the maximum required
-TCT capacity is 128. The materialized file SHA-256 recorded by the release manifest is
-\texttt{bec927029445815f085f5597ac1e4519}\allowbreak\texttt{6e8c64995793e218bc7f73df52eb8492}.
+TCT capacity is 128. Its recorded SHA-256 is
+\texttt{bec927029445815f085f5597ac1e4519}\allowbreak\texttt{6e8c64995793e218bc7f73df52eb8492}; the corrected v3 materialization is frozen and recorded with the formal checkpoint rather than silently reusing this pre-v3 hash.
 Semantic-task balancing is applied before component weights, and the global transition-weight mean is
 normalized to one. Of the 192,297 semantic tasks, 134,750 (70.07\%) require tools, 43,933 (22.85\%)
 require no tool, and 13,614 (7.08\%) expose tools that are unnecessary. The latter two groups provide
@@ -258,6 +259,9 @@ source selection 0.5, argument presence 0.1, argument grounding 0.2, revision 0.
 anchor presence/kind/grounding 0.1/0.1/0.2, and link presence/relation/target-kind/grounding
 0.1/0.1/0.1/0.2. Allocation uses masked binary cross-entropy over currently empty physical slots;
 this exact formulation is the allocation-contract defect summarized in \cref{sec:evaluation-setup}.
+The corrected neural contract adds multi-label affected-cell and affected-display routing losses with
+weights 0.2 and 0.2, respectively. Protected fact promotion remains outside the learned objective and
+is controlled by the registered source/runtime policy.
 
 \subsection{Early Diagnostic Protocol}
 
@@ -317,7 +321,7 @@ Several design decisions remain open:
 \begin{itemize}[leftmargin=*]
   \item which iterative process should update the thought tensor, how many cells it needs, and whether cells should be created or retired dynamically;
   \item whether display and thought diffusion should share a backbone and how source descriptors generalize to unseen tools;
-  \item how to estimate support and conflict for local reopening while preserving privacy during debugging;
+  \item how best to calibrate direct local-noise deltas and \textsc{keep}/\textsc{reopen}/\textsc{stabilize} actions while preserving privacy during debugging;
   \item how to tune refinement-epoch and wall-clock budgets across deployment settings.
 \end{itemize}
 These questions remain open design variables within the CID framework.

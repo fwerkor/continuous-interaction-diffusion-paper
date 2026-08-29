@@ -31,7 +31,7 @@ $F_s$ contains information whose value is controlled outside the generative stat
   F_{s+1} = \operatorname{ExternalUpdate}(F_s, e_{s+1}).
   \label{eq:fact-update}
 \end{equation}
-A clock, system load, changing document, or user-updated constraint may therefore change between diffusion steps. The channel may contain user-pinned statements, exact values that must be quoted, authoritative tool results, and provenance metadata. Not every tool result must be promoted to $F_s$; ephemeral or low-value observations may remain in the runtime cache and enter cognition only through a temporary projection.
+A clock, system load, changing document, or user-updated constraint may therefore change between diffusion steps. The channel may contain user-pinned statements, exact values that must be quoted, authoritative tool results, and provenance metadata. Not every tool result must be promoted to $F_s$; ephemeral or low-value observations may remain in the runtime cache and enter cognition only through a temporary projection. In the implementation, this permission is declared by the registered source descriptor rather than predicted by the generative model: a source may mark its returned observations as protected, and only the runtime performs the corresponding fact-store update.
 
 This channel provides grounding while leaving reasoning to the mutable cognitive state. Separating protected values from mutable cognition prevents exact numbers, constraints, and provenance from being altered by later denoising, while external updates can still replace them when the underlying source genuinely changes. This directly targets factual and copying errors without freezing the rest of the model state.
 
@@ -39,7 +39,7 @@ Each fact item is represented as
 \begin{equation}
   f_j = (v_j, \kappa_j, t_j, \nu_j, p_j),
 \end{equation}
-where $v_j$ is the value, $\kappa_j$ its source type, $t_j$ a timestamp, $\nu_j$ a version or freshness marker, and $p_j$ provenance. Fact-channel policy is an explicit runtime decision governing whether a tool result is promoted.
+where $v_j$ is the value, $\kappa_j$ its source type, $t_j$ a timestamp, $\nu_j$ a version or freshness marker, and $p_j$ provenance. Fact-channel policy is an explicit runtime decision governing whether a tool result is promoted. The model can request or consume a source, but it has no output head that can directly write or promote a value into $F_s$.
 
 \paragraph{Thought Channel.}
 The thought channel is a structured cognitive field $T_s=(c_{s,1},\ldots,c_{s,N})$, with semantic matrix $H_s\in\mathbb{R}^{N\times d}$ whose row $i$ is $h_{s,i}$. It contains reasoning, hypotheses, information needs, tool intentions, percept interpretations, plans, constraints, and conclusions. Unlike text scratchpads or untyped hidden caches, it exposes structured mutable state through a stable model--runtime contract.
@@ -107,7 +107,7 @@ Each candidate need $i_k\in I_s$ contains
 \begin{equation}
   i_k = (n_k, \pi_k, \alpha_k, \omega_k, \eta_k, \chi_k),
 \end{equation}
-where $n_k$ is a continuous need embedding, $\pi_k$ a distribution over registered sources or tools, $\alpha_k$ partially bound arguments, $\omega_k$ uncertainty, $\eta_k$ freshness or persistence demand, and $\chi_k$ links to affected cognitive or display regions.
+where $n_k$ is a continuous need embedding, $\pi_k$ a distribution over registered sources or tools, $\alpha_k$ partially bound arguments, $\omega_k$ uncertainty, $\eta_k$ freshness or persistence demand, and $\chi_k$ links to affected cognitive or display regions. The implementation assigns each owning cognitive cell a small number of stable need slots. A slot's latent query is used jointly for source selection and for learned routing over live TCT cells and display positions. Thresholded cell scores and contiguous display-position scores materialize $\chi_k$; the owning cell is always retained, while one need may additionally target several other cells and display spans without being duplicated into separate bindings.
 
 The adapter exposes a typed interface over the cognitive field. This choice preserves early access to latent intent while insulating the runtime from model-specific hidden-state geometry. It also separates three stages that need not occur at the same diffusion step:
 \begin{equation}
@@ -135,7 +135,7 @@ A conventional tool call is a transient request--response pair. CID instead crea
   b_j = (i_j, m_j, \alpha_j, \rho_j, z_j, \chi_j),
   \label{eq:binding}
 \end{equation}
-where $i_j$ is the originating need, $m_j$ the source or tool, $\alpha_j$ current arguments, $\rho_j$ a refresh policy, $z_j$ runtime cache and version state, and $\chi_j$ the target cognitive regions.
+where $i_j$ is the originating need, $m_j$ the source or tool, $\alpha_j$ current arguments, $\rho_j$ a refresh policy, $z_j$ runtime cache and version state, and $\chi_j$ the affected thought and display regions.
 
 A binding remains active while the corresponding information need remains active. Repeated intent is therefore not automatically treated as a redundant model failure. It can mean that the model wants the percept to remain cognitively salient. The runtime distinguishes two operations:
 \begin{align}
@@ -148,7 +148,7 @@ A binding remains active while the corresponding information need remains active
 If the source version is unchanged, the runtime can reuse $v_j$ but recompute $P_j^{s+1}$. The same fact may therefore receive a different task-specific interpretation as cognition evolves. This supports copying and sustained reference: the source need not be re-read, yet its influence is renewed at each relevant denoising update.
 
 \paragraph{Changing Source.}
-If the source is time-varying or streamable, $\rho_j$ may request polling, version checks, event subscriptions, or incremental chunks. An arriving value updates a fact item if policy marks it as protected, and always permits a new cognitive projection. Examples include current time, evolving realized display length, a modified file, sensor input, or streaming retrieval results.
+If the source is time-varying or streamable, $\rho_j$ may request polling, version checks, event subscriptions, or incremental chunks. An arriving value updates a fact item when the runtime-owned source policy marks its results as protected, and always permits a new cognitive projection. Examples include current time, evolving realized display length, a modified file, sensor input, or streaming retrieval results.
 
 A simple refresh policy is
 \begin{equation}
@@ -188,14 +188,14 @@ where $g_{j,s}$ is predicted from need persistence, relevance, and source freshn
 
 Recomputing the projection from the current $T_s$ and $Y_s$ lets one cached result support different parts of the reasoning as the trajectory evolves, without another external call. It also allows a newly arrived result to affect already formed hypotheses and display regions immediately, including content formed before the result arrived.
 
-New evidence may change the editability of existing cells. Let $\Delta_{j,i}$ estimate how strongly percept $j$ changes the posterior of cell $i$. The runtime or model updates
+New evidence may change the editability of existing cells. Conceptually, let $\Delta_{j,i}$ estimate how strongly percept $j$ changes the posterior of cell $i$. A local update can be written as
 \begin{equation}
   \tau_{s+1,i} = \operatorname{clip}
   \left(\tau_{s,i} + \lambda_{\mathrm{open}}\Delta^-_{j,i}
   - \lambda_{\mathrm{close}}\Delta^+_{j,i}\right),
   \label{eq:local-noise-update}
 \end{equation}
-where $\Delta^-_{j,i}$ measures conflict and $\Delta^+_{j,i}$ support. Conflicting cognitive cells become more diffused and revisable; supported cells stabilize. Evidence-linked display positions are reopened analogously through $\tau^Y_s$, implemented by remasking or bounded visible-token revision.
+where $\Delta^-_{j,i}$ denotes evidence favoring reopening and $\Delta^+_{j,i}$ evidence favoring stabilization. The current implementation does not instantiate separate support/conflict heads. Instead, the neural core directly predicts a bounded local-noise delta together with a \textsc{keep}, \textsc{reopen}, or \textsc{stabilize} action, and the runtime lifecycle gate applies the legal transition. Evidence-linked display positions are revised analogously through the learned $\chi_k$ routing, remasking, and bounded visible-token revision.
 
 Local reopening is important for efficiency as well as correctness. New evidence should revise the state it invalidates, but it should not discard unrelated work that was already correct. Adjusting editability per cell therefore aims to preserve useful computation while concentrating additional denoising on regions that actually need correction.
 
@@ -225,12 +225,13 @@ A possible objective is
   + \lambda_I\mathcal{L}_{\mathrm{intent}}
   + \lambda_B\mathcal{L}_{\mathrm{bind}} \notag\\
   &+ \lambda_P\mathcal{L}_{\mathrm{assim}}
+  + \lambda_{\chi}\mathcal{L}_{\mathrm{route}}
   + \lambda_R\mathcal{L}_{\mathrm{refresh}}
   + \lambda_G\mathcal{L}_{\mathrm{ground}}
   + \lambda_C\mathcal{L}_{\mathrm{conv}}.
   \label{eq:training-objective}
 \end{align}
-The first two terms train thought and display diffusion; the others train intent exposure, binding, event-conditioned revision, refresh behavior, symbolic grounding, and the equilibrium signal.
+The first two terms train thought and display diffusion; the others train intent exposure, binding, affected-region routing, event-conditioned revision, refresh behavior, symbolic grounding, and the equilibrium signal. In the concrete neural contract, routing supervision is multi-label over live TCT cells and display positions for each stable need slot; contiguous positive display positions are materialized as spans at runtime. Fact promotion is intentionally excluded from the model loss because write permission to the protected fact channel is a runtime/source policy.
 
 Static-copy training examples repeatedly expose an unchanged source while the output is gradually composed. Dynamic-monitoring examples change the source during denoising and require the thought and display states to track the latest externally supplied value. Search and file-reading examples teach need emergence, partial query binding, delayed arrival, and evidence-conditioned revision.
 \par\vspace{3pt}
