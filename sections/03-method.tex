@@ -216,7 +216,7 @@ The same termination mechanism also provides a natural test-time compute control
 \noindent\textbf{TRAINING OBJECTIVE}\par\vspace{2pt}
 CID requires a model trained for channel semantics and asynchronous events. A training trajectory contains a task $x$, protected facts $F$, tool/source descriptors $\mathcal{D}$, external event sequence $E=(e_1,\ldots,e_K)$ with arrival times, target thought structures $T^*$ or weak structural supervision, and final display $Y^*$.
 
-Training randomizes event arrival, source freshness, and cache state. Before a needed event arrives, the model should maintain uncertainty, expose a binding need, and avoid fabricating the missing value. Waiting and final snapshots supervise the equilibrium signal; runtime state distinguishes quiescence from termination. After arrival, the model should assimilate the percept, revise affected cells, preserve unrelated cognition, and update the display.
+Training varies event-arrival schedules and source-freshness demands across trajectories. Before a needed event arrives, the model should maintain uncertainty, expose a binding need, and avoid fabricating the missing value. Cache reuse remains runtime-owned and is exercised separately through runtime controls. Waiting and final snapshots supervise the equilibrium signal; runtime state distinguishes quiescence from termination. After arrival, the model should assimilate the percept, revise affected cells, preserve unrelated cognition, and update the display.
 
 A possible objective is
 \begin{align}

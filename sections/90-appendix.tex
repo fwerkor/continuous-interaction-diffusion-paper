@@ -139,7 +139,7 @@ A practical initial dataset can be synthesized from ordinary question--answer pa
   \item add static-copy cases that preserve one value across many steps and dynamic cases in which the source changes before display convergence.
 \end{enumerate}
 
-Teacher-generated textual reasoning may be encoded into initial cognitive cells, and training may randomize semantic presentation and event schedules to avoid reducing the thought tensor to a disguised text chain. Such augmentation must not introduce arbitrary physical-slot labels that are absent from the semantic target; physical allocation follows the same deterministic contract used by the runtime.
+Teacher-generated textual reasoning may be encoded into initial cognitive cells, and training may randomize semantic presentation and event schedules to avoid reducing the thought tensor to a disguised text chain. Such augmentation must not introduce arbitrary physical-slot labels that are absent from the semantic target. CID v1 tensorizes every transition into the same 128-slot physical field used at runtime; training assigns stable logical cells to deterministic slots within a trajectory, while runtime-owned reclamation and compaction may later move physical positions without changing cell identity.
 
 \section{Experimental Reproducibility}
 \label{app:reproducibility}
@@ -319,7 +319,7 @@ well-defined corrected model and train--runtime contract.
 
 Several design decisions remain open:
 \begin{itemize}[leftmargin=*]
-  \item which iterative process should update the thought tensor, how many cells it needs, and whether cells should be created or retired dynamically;
+  \item which iterative process should update the thought tensor, how many logical cells different tasks need, and how aggressively allocation, retirement, reclamation, and compaction should be scheduled;
   \item whether display and thought diffusion should share a backbone and how source descriptors generalize to unseen tools;
   \item how best to calibrate direct local-noise deltas and \textsc{keep}/\textsc{reopen}/\textsc{stabilize} actions while preserving privacy during debugging;
   \item how to tune refinement-epoch and wall-clock budgets across deployment settings.
