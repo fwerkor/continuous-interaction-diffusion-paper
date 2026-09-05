@@ -127,10 +127,10 @@ The current realized display length---for example, the inferred EOS position or 
 
 A retrieval source first returns titles, then snippets, then complete passages. The binding remains active throughout the stream. Early chunks narrow hypotheses and refine the query; later chunks reopen unsupported conclusions and supply exact evidence. Unrelated display regions remain stable under local diffusion clocks.
 
-\section{Suggested Training Data Construction}
+\section{Training Data Construction}
 \label{app:data}
 
-A practical initial dataset can be synthesized from ordinary question--answer pairs and documents:
+CID-Dataset is synthesized from ordinary question--answer pairs, documents, and controlled interaction tasks:
 \begin{enumerate}[leftmargin=*]
   \item identify answer spans that depend on external evidence and hide those spans from the model-visible prompt;
   \item create source descriptors, binding targets, delayed or incremental arrival schedules, and source-level protected-result policy;
@@ -139,37 +139,14 @@ A practical initial dataset can be synthesized from ordinary question--answer pa
   \item add static-copy cases that preserve one value across many steps and dynamic cases in which the source changes before display convergence.
 \end{enumerate}
 
-Teacher-generated textual reasoning may be encoded into initial cognitive cells, and training may randomize semantic presentation and event schedules to avoid reducing the thought tensor to a disguised text chain. Such augmentation must not introduce arbitrary physical-slot labels that are absent from the semantic target. CID v1 tensorizes every transition into the same 128-slot physical field used at runtime; training assigns stable logical cells to deterministic slots within a trajectory, while runtime-owned reclamation and compaction may later move physical positions without changing cell identity.
+Teacher-generated supervision is stored as concise semantic state summaries; private chain-of-thought transcripts are excluded. Training randomizes semantic presentation and event schedules without introducing arbitrary physical-slot labels into the semantic target. CID v1 tensorizes every transition into the same 128-slot physical field used at runtime; training assigns stable logical cells to deterministic slots within a trajectory, while runtime-owned reclamation and compaction may later move physical positions without changing cell identity.
 
 \section{Experimental Reproducibility}
 \label{app:reproducibility}
 
-\subsection{Model, Code, and Checkpoint Identity}
-
-The early diagnostic prototype uses \texttt{GSAI-ML/iLLaDA-8B-Base}~\citep{nie2026illada} at revision
-\texttt{a1b5b5f8a31a3854a46205ee584178c04b45ec9a}. Its training code is pinned to commit
-\texttt{a1396c79279b2aa024af1f97dad9130472c2dc25}. The frozen 8B backbone is reused for token
-embeddings, the bidirectional decoder, and the native LM head; CID contributes trainable channel
-projections, external-perception fusion, and prediction heads. The diagnostic checkpoint contains
-53 trainable tensors totaling 453,841,081 parameters. Its recorded state is 282,536 optimizer steps,
-3,400,565 processed training transitions, and three completed epochs. The compact inference checkpoint
-has SHA-256
-\texttt{d9e33c65b4316b9c8acea93a53ebdf90}\allowbreak\texttt{afcf8d419d5c973c7d84dbc7ddb3b9c5}.
-For reproducibility of the development diagnostic, the checkpoint and raw traces are retained at
-\url{https://huggingface.co/fwerkor/CID-RQ1-StageA-v0}; this checkpoint is not used for formal performance results.
-
 \subsection{CID-Dataset Training Corpus}
 
-The diagnostic prototype and corrected retraining draw from the released \texttt{fwerkor/CID-Dataset} semantic mixture~\cite{cao2026ciddataset}. The underlying tasks, prompts, evidence, and answers are kept fixed across the contract correction, while the corrected materialization may add contract-level supervision such as a stable information-need owner, additional affected TCT cells, affected display regions, and source-level protected-result policy. The pre-v3 release materialization is
-8,379,022,223 bytes and contains 192,297 semantic tasks expanded into 421,798 trajectories. There are
-2,589,664 adjacent snapshot transitions plus 421,798 virtual empty-state bootstrap transitions, for
-3,011,462 trainable transitions. Maximum trajectory length is 44 snapshots and the maximum required
-TCT capacity is 128. Its recorded SHA-256 is
-\texttt{bec927029445815f085f5597ac1e4519}\allowbreak\texttt{6e8c64995793e218bc7f73df52eb8492}; the corrected v3 materialization is frozen and recorded explicitly with the formal checkpoint, preventing accidental reuse of this pre-v3 hash.
-Semantic-task balancing is applied before component weights, and the global transition-weight mean is
-normalized to one. Of the 192,297 semantic tasks, 134,750 (70.07\%) require tools, 43,933 (22.85\%)
-require no tool, and 13,614 (7.08\%) expose tools that are unnecessary. The latter two groups provide
-negative supervision against indiscriminate tool use.
+Formal training uses the current public \texttt{fwerkor/CID-Dataset} release~\cite{cao2026ciddataset}. The canonical training materialization contains 192,729 semantic tasks expanded into 422,230 trajectories, with 2,724,556 adjacent-state transitions and 422,230 empty-state bootstrap transitions, for 3,146,786 trainable transitions. Maximum trajectory length is 44 snapshots and the maximum required TCT capacity is 128. Semantic-task balancing is applied before component weights, and the global transition-weight mean is normalized to one. Of the 192,729 semantic tasks, 135,086 (70.09\%) require tools, 43,981 (22.82\%) require no tool, and 13,662 (7.09\%) expose tools that are unnecessary. The latter two groups provide negative supervision against indiscriminate tool use.
 
 \begin{table*}[t]
   \centering
@@ -180,105 +157,37 @@ negative supervision against indiscriminate tool use.
     \toprule
     Component & Tasks & Traj. & Train trans. & Weight \\
     \midrule
-    public-base & 8,512 & 34,048 & 75,596 & 2.0 \\
+    public-base & 8,512 & 34,048 & 105,304 & 2.0 \\
     public-interaction & 7,590 & 30,360 & 430,834 & 2.5 \\
-    mechanism & 10,000 & 40,000 & 214,287 & 1.0 \\
-    computational & 12,000 & 24,000 & 135,339 & 1.0 \\
-    symbolic & 15,600 & 31,200 & 153,104 & 1.0 \\
+    mechanism & 10,000 & 40,000 & 230,287 & 1.0 \\
+    computational & 12,000 & 24,000 & 137,739 & 1.0 \\
+    symbolic & 15,600 & 31,200 & 155,504 & 1.0 \\
     correction & 10,000 & 20,000 & 140,220 & 1.0 \\
-    complex-logic & 12,000 & 24,000 & 144,000 & 1.0 \\
-    self-identity & 720 & 1,440 & 2,880 & 1.0 \\
-    multilingual & 1,200 & 2,400 & 21,725 & 1.0 \\
+    complex-logic & 12,000 & 24,000 & 168,000 & 1.0 \\
+    self-identity & 720 & 1,440 & 4,280 & 1.0 \\
+    multilingual & 1,200 & 2,400 & 24,125 & 1.0 \\
     composed & 12,000 & 24,000 & 261,058 & 1.0 \\
-    tool-restraint & 6,500 & 6,500 & 6,500 & 1.5 \\
-    compositional-longtail & 20,000 & 40,000 & 220,000 & 1.0 \\
+    tool-restraint & 6,500 & 6,500 & 13,000 & 1.5 \\
+    compositional-longtail & 20,000 & 40,000 & 260,000 & 1.0 \\
     long-horizon & 12,000 & 24,000 & 471,626 & 1.0 \\
-    deep-tool-restraint & 4,000 & 4,000 & 26,000 & 1.5 \\
+    deep-tool-restraint & 4,000 & 4,000 & 30,000 & 1.5 \\
     natural-interaction & 8,675 & 17,350 & 182,059 & 2.0 \\
     natural-public/nq-open & 30,000 & 60,000 & 330,121 & 1.0 \\
-    natural-public/oasst1 & 4,500 & 4,500 & 9,000 & 1.5 \\
+    natural-public/oasst1 & 4,500 & 4,500 & 13,500 & 1.5 \\
     natural-public/multidoc2dial & 15,000 & 30,000 & 165,171 & 1.5 \\
     natural-public/qasper & 2,000 & 4,000 & 21,942 & 2.0 \\
+    curated & 432 & 432 & 2,016 & 4.0 \\
     \midrule
-    Total & 192,297 & 421,798 & 3,011,462 & -- \\
+    Total & 192,729 & 422,230 & 3,146,786 & -- \\
     \bottomrule
   \end{tabular}
 \end{table*}
 
-The natural-public subset contributes 30,000 NQ-Open train tasks~\citep{kwiatkowski2019natural,lee2019latent} (CC-BY-SA-3.0), 4,500 OASST1 train
+The natural-public component contributes 30,000 NQ-Open train tasks~\citep{kwiatkowski2019natural,lee2019latent} (CC-BY-SA-3.0), 4,500 OASST1 train
 tasks~\citep{kopf2023openassistant} (Apache-2.0), 15,000 MultiDoc2Dial train tasks~\citep{feng2021multidoc2dial} (CC-BY-3.0), and 2,000 QASPER train tasks~\citep{dasigi2021qasper}
 (CC-BY-4.0). Public-source rows retain upstream repository, revision, split, license, and row-key
 provenance. Teacher-generated components contain concise semantic state summaries; private
 chain-of-thought transcripts are excluded. Physical slot placement and event timing are schedule variables; they are not produced by the teacher.
-
-\subsection{Initial Stage-A Prototype Optimization}
-
-\begin{table}[h]
-  \centering
-  \caption{Optimization and model limits of the initial Stage-A diagnostic prototype. The effective global batch is held at 32 when the run is resumed with fewer GPUs.}
-  \label{tab:stagea-hparams}
-  \scriptsize
-  \begin{tabular}{ll}
-    \toprule
-    Setting & Value \\
-    \midrule
-    Optimizer & AdamW~\citep{loshchilov2019adamw} \\
-    Peak learning rate & $1\times10^{-4}$ \\
-    Weight decay & 0.01 \\
-    Precision & bfloat16 \\
-    Micro-batch / GPU & 1 \\
-    Effective global batch & 32 \\
-    Gradient accumulation & 8 (4 GPUs), 16 (2 GPUs) \\
-    Epochs & 3 \\
-    Warmup steps & 2,000 \\
-    LR decay steps & 285,000 \\
-    Minimum LR ratio & 0.1 \\
-    Gradient-norm clip & 1.0 \\
-    Diffusion $t$ range & $[0.05,1.0]$ \\
-    Rollout horizon & 3 \\
-    Teacher-forcing epochs & 1 \\
-    Rollout-ramp epochs & 2 \\
-    Maximum TCT slots & 128 \\
-    Maximum display tokens & 1,024 \\
-    Runtime allocation threshold & 0.8 \\
-    Runtime need threshold & 0.6 \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-The initial Stage-A prototype was run with data-parallel RTX A6000 48\,GB GPUs and resumed across world sizes while
-preserving effective batch 32. The final phase used two GPUs with gradient accumulation 16; earlier
-four-GPU phases used accumulation 8. The backbone parameters have \texttt{requires\_grad=False}. The forward and input-gradient path still traverses
-the full decoder because CID projections precede it. Stage A is therefore materially cheaper in optimizer
-state and parameter-gradient computation than Stage B while still exercising the full decoder path.
-
-The loss weights in the initial prototype are: thought 1.0, display 1.0, convergence 0.2, allocation 0.3,
-roles 0.2, uncertainty 0.1, local-noise delta 0.1, lifecycle 0.1, information-need intent 0.5,
-source selection 0.5, argument presence 0.1, argument grounding 0.2, revision 0.2, refresh 0.2,
-anchor presence/kind/grounding 0.1/0.1/0.2, and link presence/relation/target-kind/grounding
-0.1/0.1/0.1/0.2. Allocation uses masked binary cross-entropy over currently empty physical slots;
-this exact formulation is the allocation-contract defect summarized in \cref{sec:evaluation-setup}.
-The corrected neural contract adds multi-label affected-cell and affected-display routing losses with
-weights 0.2 and 0.2, respectively. Protected fact promotion remains outside the learned objective and
-is controlled by the registered source/runtime policy.
-
-\subsection{Early Diagnostic Protocol}
-
-The development diagnostic uses 32 NQ-Open rows~\citep{kwiatkowski2019natural,lee2019latent} sampled with seed 20260824 from
-\texttt{google-research-datasets/nq\_open}, revision
-\texttt{5dd9790a83002ad084ddeb7c420dc716852c6f28}, file
-\texttt{nq\_open/validation-00000-of-00001.parquet}. Training uses the upstream train split only.
-Each held-out trajectory has one \texttt{knowledge\_search} evidence event with a randomized one-to-three
-step delay and an eight-slot teacher schedule. The default-runtime control uses 128 TCT slots, four
-denoising iterations per runtime update, and a 16-step cap. Diagnostic runs use the same weights,
-source replay, argument catalog, denoising budget, and task set. Runs are executed in bfloat16 on RTX
-3090 24\,GB GPUs, one model replica per probe job. Raw outputs, the exact held-out JSONL, registry,
-validation scripts, aggregate summary, and SHA-256 manifest are included in the supplementary diagnostic artifact.
-
-We additionally use a ten-task compositional generalization probe with zero exact logic-spec overlap
-with training. This probe spans boolean, graph, spatial, causal, ordering, quantifier, candidate,
-numeric, policy, and repair tasks and is used only as a checkpoint-health control, not as a general
-benchmark claim.
 
 \subsection{Final Evaluation Protocol}
 
@@ -310,15 +219,13 @@ training runs are outside the scope of the current evaluation.
 
 \subsection{Final Training and Stage-B Reporting Rule}
 
-The corrected run retrains Stage A from the pinned base model after the contract fixes summarized in
-\cref{sec:evaluation-setup}; it does not initialize from the early diagnostic prototype. Stage A keeps
+The corrected run trains Stage A from the pinned base model under the contract summarized in
+\cref{sec:evaluation-setup}. Stage A keeps
 the frozen backbone in bfloat16 while retaining trainable CID modules in FP32 and using bfloat16
 autocast for the forward pass; thresholded runtime probabilities are evaluated in FP32. Stage B then
 unfreezes the backbone and uses FSDP~\citep{zhao2023fsdp}/AdamW~\citep{loshchilov2019adamw}. To avoid reporting stale pilot settings as final
 hyperparameters, the final training table is populated only from frozen checkpoint metadata after the
-run completes. Earlier pre-fix Stage-B smoke/stress runs are engineering tests and are excluded from
-experimental results. This separation ensures that all formal performance claims refer to one
-well-defined corrected model and train--runtime contract.
+run completes. All formal performance claims therefore refer to one well-defined model and train--runtime contract.
 
 \section{Open Technical Questions}
 \label{app:questions}
