@@ -214,7 +214,14 @@ The same termination mechanism also provides a natural test-time compute control
 \noindent\rule{\columnwidth}{0.5pt}
 \vspace{3pt}
 \noindent\textbf{TRAINING OBJECTIVE}\par\vspace{2pt}
-CID requires a model trained for channel semantics and asynchronous events. A training trajectory contains a task $x$, protected facts $F$, tool/source descriptors $\mathcal{D}$, external event sequence $E=(e_1,\ldots,e_K)$ with arrival times, target thought structures $T^*$ or weak structural supervision, and final display $Y^*$.
+CID requires a model trained for channel semantics and asynchronous events. A training trajectory contains a task $x$, protected facts $F$, tool/source descriptors $\mathcal{D}$, external event sequence $E=(e_1,\ldots,e_K)$ with arrival times, target thought structures $T^*$ or weak structural supervision, and final display $Y^*$. Each supervised cognitive cell carries a concise semantic summary $q_i$ together with typed targets such as role, uncertainty, local diffusion state, lifecycle, and interaction fields. The summary is training-time supervision, not text that the runtime asks the model to generate.
+
+For the continuous semantic field, the text encoder maps $q_i$ to a detached target vector $e_i^*=\operatorname{sg}(E_{\mathrm{sem}}(q_i))\in\mathbb{R}^d$. Given a corrupted or self-rolled thought state, the neural core predicts the corresponding TCT vector $\hat h_i$. Over the supervised cell set $\mathcal{M}$, the semantic thought loss is
+\begin{equation}
+  \mathcal{L}_{T}=\frac{1}{|\mathcal{M}|}\sum_{i\in\mathcal{M}}\lVert \hat h_i-e_i^*\rVert_2^2.
+  \label{eq:thought-semantic-loss}
+\end{equation}
+Thus natural-language summaries provide semantic coordinates for the latent cognitive field during training, while inference keeps the field continuous and need not decode an intermediate chain of thought. Separate heads supervise allocation, roles, uncertainty and local noise, lifecycle/revision, information needs, source and argument binding, affected-region routing, grounding, and convergence.
 
 Training varies event-arrival schedules and source-freshness demands across trajectories. Before a needed event arrives, the model should maintain uncertainty, expose a binding need, and avoid fabricating the missing value. Closed-loop targets are conditioned on the observations actually obtained by the rollout: thought and display supervision remain at an unresolved pre-observation state until each required event arrives. Training and runtime also share the same canonical unresolved display initialization, with an explicit EOS boundary followed by latent canvas capacity. Cache reuse remains runtime-owned and is exercised separately through runtime controls. Waiting and final snapshots supervise the equilibrium signal; runtime state distinguishes quiescence from termination. After arrival, the model should assimilate the percept, revise affected cells, preserve unrelated cognition, and update the display.
 

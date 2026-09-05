@@ -139,7 +139,7 @@ CID-Dataset is synthesized from ordinary question--answer pairs, documents, and 
   \item add static-copy cases that preserve one value across many steps and dynamic cases in which the source changes before display convergence.
 \end{enumerate}
 
-Teacher-generated supervision is stored as concise semantic state summaries; private chain-of-thought transcripts are excluded. Training randomizes semantic presentation and event schedules without introducing arbitrary physical-slot labels into the semantic target. CID v1 tensorizes every transition into the same 128-slot physical field used at runtime; training assigns stable logical cells to deterministic slots within a trajectory, while runtime-owned reclamation and compaction may later move physical positions without changing cell identity.
+Teacher-generated supervision is stored as concise semantic state summaries; private chain-of-thought transcripts are excluded. During tensorization, each summary is encoded into a detached semantic target vector for its cognitive cell, while roles, uncertainty, lifecycle/revision, interaction needs, routing, and related typed fields receive their own targets. The summary text itself is not a runtime output. Training randomizes semantic presentation and event schedules without introducing arbitrary physical-slot labels into the semantic target. CID v1 tensorizes every transition into the same 128-slot physical field used at runtime; training assigns stable logical cells to deterministic slots within a trajectory, while runtime-owned reclamation and compaction may later move physical positions without changing cell identity.
 
 \section{Experimental Reproducibility}
 \label{app:reproducibility}
