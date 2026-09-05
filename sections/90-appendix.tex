@@ -307,7 +307,9 @@ are outside the scope of the current evaluation.
 \subsection{Final Training and Stage-B Reporting Rule}
 
 The corrected run retrains Stage A from the pinned base model after the contract fixes summarized in
-\cref{sec:evaluation-setup}; it does not initialize from the early diagnostic prototype. Stage B then
+\cref{sec:evaluation-setup}; it does not initialize from the early diagnostic prototype. Stage A keeps
+the frozen backbone in bfloat16 while retaining trainable CID modules in FP32 and using bfloat16
+autocast for the forward pass; thresholded runtime probabilities are evaluated in FP32. Stage B then
 unfreezes the backbone and uses FSDP~\citep{zhao2023fsdp}/AdamW~\citep{loshchilov2019adamw}. To avoid reporting stale pilot settings as final
 hyperparameters, the final training table is populated only from frozen checkpoint metadata after the
 run completes. Earlier pre-fix Stage-B smoke/stress runs are engineering tests and are excluded from
