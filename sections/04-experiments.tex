@@ -32,9 +32,40 @@ To test the specifically diffusion-native claim, we construct cases in which use
 
 We measure stale-value rate, observation-to-correction lag, affected-region routing precision/recall, the fraction of routed thought/display regions revised after arrival, preservation of unrelated state, and final correctness. A successful system should identify and revise evidence-dependent regions without restarting the trajectory or repeatedly executing an unchanged source.
 
+\subsection{Ablation Study}
+\label{sec:ablations}
+
+Because CID's learned channels, interaction heads, and runtime state transitions are tightly coupled, removing most learned mechanisms would require training a different model and would confound the effect of the mechanism with a new optimization run. We therefore use three targeted ablations that cover the main interaction claims while keeping the study compact. One controlled development ablation compares two models trained from the same base model, data materialization, contract, batch geometry, and optimization budget, differing only in whether interaction needs are decoded from the provisional updated thought state. The other two interventions reuse the final corrected checkpoint and alter only runtime execution policy.
+
+\begin{table}[t]
+  \centering
+  \caption{Three targeted CID ablations. The provisional-state comparison uses matched epoch-2 checkpoints at 62,645 optimizer steps and fixed-seed free-rollout validation. The two runtime ablations reuse the final corrected checkpoint.}
+  \label{tab:cid-ablation}
+  \scriptsize
+  \setlength{\tabcolsep}{2.5pt}
+  \begin{tabular}{p{0.19\linewidth}p{0.22\linewidth}p{0.28\linewidth}p{0.22\linewidth}}
+    \toprule
+    Ablation & Comparison & Primary metrics & Result \\
+    \midrule
+    Provisional-state decoding & stale vs. provisional thought & display exact; Need F1; recovery failure & 13.6$\rightarrow$22.8; 1.9$\rightarrow$9.1; 8.14$\rightarrow$5.81 \\
+    Asynchronous execution & async vs. forced blocking & latency; wait overlap; task quality & \textit{pending runtime replay} \\
+    Continuous revision & normal vs. freeze after materialization & final accuracy; stale rate; repair rate & \textit{pending runtime replay} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Provisional-state-aware interaction decoding.}
+The first ablation comes from a preserved controlled retraining pair rather than from the final corrected model. Both runs use the same frozen CID-Dataset materialization and neural contract, 422,230 training examples, 3,146,786 transitions, 44.29M trainable parameters, effective batch size 96, and the same validation seed. The only mechanism change makes need, argument, refresh, and routing predictions condition on the provisional thought state after the current thought update, rather than on the stale pre-update hidden state. At the common epoch-2 budget, this change raises free-rollout materialized-display exact rate from 13.6\% to 22.8\% and display-token accuracy from 20.4\% to 27.7\%. Need F1 rises from 1.9\% to 9.1\%, while rollout recovery failure falls from 8.14\% to 5.81\%. We report this pair only as an isolated mechanism ablation: the later corrected CID model contains additional train--runtime fixes and is evaluated separately in the main results.
+
+\paragraph{Asynchronous execution.}
+The second ablation will run the final corrected checkpoint in its normal asynchronous runtime and in a forced-blocking mode that prevents useful denoising/refinement while an external request is outstanding. The comparison keeps model weights, requests, source results, and latency schedules fixed. We will report end-to-end latency, tool-wait overlap, useful pre-arrival computation, and final task quality. This directly tests whether non-blocking interaction contributes measurable efficiency rather than merely changing the execution trace.
+
+\paragraph{Continuous revision.}
+The third ablation will compare the normal runtime against a freeze-after-materialization policy using the same final checkpoint. In the ablated runtime, a cognitive/display region is frozen after its first materialization and cannot be revised by later diffusion iterations or newly arrived evidence. We will measure final correctness, stale-value rate, observation-to-correction lag, and the rate at which initially incorrect materialized content is repaired. This isolates the value of continuous revision without retraining a model whose learned representation was optimized for a different state topology.
+
 \subsection{Controlled Runtime Analysis}
 \label{sec:runtime-analysis}
 
-We isolate runtime behavior with interventions that reuse the same final checkpoint, avoiding a collection of separately trained weakened models: asynchronous versus blocking execution, persistent re-projection versus one-time percept injection, need-conditioned refresh versus no refresh, cache reuse versus forced re-execution, and alternative source-latency schedules. These controls directly test whether CID's runtime mechanisms provide the intended behavior without multiplying training cost.
+Beyond the two runtime ablations above, we analyze persistent re-projection versus one-time percept injection, need-conditioned refresh versus no refresh, cache reuse versus forced re-execution, and alternative source-latency schedules. These sensitivity and runtime controls reuse the same final checkpoint and are kept separate from the three headline ablations in \cref{tab:cid-ablation}.
 
 The broader CID hypothesis remains falsifiable. The architecture is not supported if the corrected model cannot bind tools reliably, if asynchronous computation is mostly discarded after observations arrive, if revision damages more correct state than it repairs, or if simpler explicit-call or asynchronous autoregressive systems match quality and latency with lower complexity.

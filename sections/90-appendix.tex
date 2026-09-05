@@ -297,11 +297,16 @@ a logical event clock so accelerator speed cannot change pre-arrival refinement;
 wall-clock measurements are reported separately.
 
 Controlled runtime analyses reuse the same final checkpoint and avoid training separate weakened
-models. They compare asynchronous against forced-blocking execution, persistent re-projection against
-one-time percept injection, need-conditioned refresh against no refresh, cache reuse against forced
-re-execution, and multiple source-latency schedules. These interventions isolate runtime behavior at
-negligible training cost; learned-component ablations that would require independent full retraining
-are outside the scope of the current evaluation.
+models. The headline runtime ablations compare asynchronous against forced-blocking execution and
+continuous revision against freeze-after-materialization; additional analyses cover persistent
+re-projection against one-time percept injection, need-conditioned refresh against no refresh, cache
+reuse against forced re-execution, and multiple source-latency schedules. These interventions isolate
+runtime behavior at negligible training cost. We additionally retain one controlled development
+retraining pair in which the base model, frozen CID-Dataset materialization, neural contract, batch
+geometry, and optimization budget are matched and only provisional-state-aware interaction decoding
+changes. This pair is reported as a mechanism ablation in \cref{sec:ablations}, not as a comparison to
+the later final corrected CID checkpoint. Other learned-component removals that would require new full
+training runs are outside the scope of the current evaluation.
 
 \subsection{Final Training and Stage-B Reporting Rule}
 
