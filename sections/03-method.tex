@@ -26,12 +26,12 @@ If the answer continues to rely on the same specification, the binding stays act
 \label{sec:channels}
 
 \paragraph{Fact Channel.}
-$F_s$ contains information whose value is controlled outside the generative state. The model can attend to it but cannot overwrite it. Importantly, this does not imply temporal immutability:
+$F_s$ contains information whose value is controlled outside the generative state. The model can attend to it but cannot overwrite it. The channel may still change over time:
 \begin{equation}
   F_{s+1} = \operatorname{ExternalUpdate}(F_s, e_{s+1}).
   \label{eq:fact-update}
 \end{equation}
-A clock, system load, changing document, or user-updated constraint may therefore change between diffusion steps. The channel may contain user-pinned statements, exact values that must be quoted, authoritative tool results, and provenance metadata. Not every tool result must be promoted to $F_s$; ephemeral or low-value observations may remain in the runtime cache and enter cognition only through a temporary projection. In the implementation, this permission is declared by the registered source descriptor rather than predicted by the generative model: a source may mark its returned observations as protected, and only the runtime performs the corresponding fact-store update.
+A clock, system load, changing document, or user-updated constraint may therefore change between diffusion steps. The channel may contain user-pinned statements, exact values that must be quoted, authoritative tool results, and provenance metadata. Tool results may remain in the runtime cache and enter cognition through a temporary projection when promotion to $F_s$ is unnecessary. The registered source descriptor declares promotion permission: a source may mark its returned observations as protected, and only the runtime performs the corresponding fact-store update.
 
 This channel provides grounding while leaving reasoning to the mutable cognitive state. Separating protected values from mutable cognition prevents exact numbers, constraints, and provenance from being altered by later denoising, while external updates can still replace them when the underlying source genuinely changes. This directly targets factual and copying errors without freezing the rest of the model state.
 
@@ -39,10 +39,10 @@ Each fact item is represented as
 \begin{equation}
   f_j = (v_j, \kappa_j, t_j, \nu_j, p_j),
 \end{equation}
-where $v_j$ is the value, $\kappa_j$ its source type, $t_j$ a timestamp, $\nu_j$ a version or freshness marker, and $p_j$ provenance. Fact-channel policy is an explicit runtime decision governing whether a tool result is promoted. The model can request or consume a source, but it has no output head that can directly write or promote a value into $F_s$.
+where $v_j$ is the value, $\kappa_j$ its source type, $t_j$ a timestamp, $\nu_j$ a version or freshness marker, and $p_j$ provenance. Fact-channel policy is an explicit runtime decision governing whether a tool result is promoted. The model can request or consume a source; writes and promotions into $F_s$ remain runtime-owned operations.
 
 \paragraph{Thought Channel.}
-The thought channel is a structured cognitive field $T_s=(c_{s,1},\ldots,c_{s,N})$, with semantic matrix $H_s\in\mathbb{R}^{N\times d}$ whose row $i$ is $h_{s,i}$. It contains reasoning, hypotheses, information needs, tool intentions, percept interpretations, plans, constraints, and conclusions. Unlike text scratchpads or untyped hidden caches, it exposes structured mutable state through a stable model--runtime contract.
+The thought channel is a structured cognitive field $T_s=(c_{s,1},\ldots,c_{s,N})$, with semantic matrix $H_s\in\mathbb{R}^{N\times d}$ whose row $i$ is $h_{s,i}$. It contains reasoning, hypotheses, information needs, tool intentions, percept interpretations, plans, constraints, and conclusions. It exposes this structured mutable state through a stable model--runtime contract.
 
 Making these states explicit gives the runtime something more useful than a partially generated string to act on. In particular, it can detect an information need, track which regions depend on it, and preserve uncertainty while a result is still in flight. This enables earlier tool execution and more selective revision after the result arrives.
 
@@ -130,14 +130,14 @@ The main efficiency benefit is that external work can start at need emergence or
 \subsection{Persistent Perceptual Bindings}
 \label{sec:bindings}
 
-A conventional tool call is a transient request--response pair. CID instead creates a persistent perceptual binding
+CID extends a transient request--response pair into a persistent perceptual binding
 \begin{equation}
   b_j = (i_j, m_j, \alpha_j, \rho_j, z_j, \chi_j),
   \label{eq:binding}
 \end{equation}
 where $i_j$ is the originating need, $m_j$ the source or tool, $\alpha_j$ current arguments, $\rho_j$ a refresh policy, $z_j$ runtime cache and version state, and $\chi_j$ the affected thought and display regions.
 
-A binding remains active while the corresponding information need remains active. Repeated intent is therefore not automatically treated as a redundant model failure. It can mean that the model wants the percept to remain cognitively salient. The runtime distinguishes two operations:
+A binding remains active while the corresponding information need remains active. Repeated intent can keep the percept cognitively salient across denoising steps. The runtime distinguishes two operations:
 \begin{align}
   \text{external refresh: }& v_j^{s+1} \leftarrow m_j(\alpha_j, s+1), \\
   \text{cognitive refresh: }& P_j^{s+1} \leftarrow \Project(v_j, T_s, Y_s).
@@ -195,16 +195,16 @@ New evidence may change the editability of existing cells. Conceptually, let $\D
   - \lambda_{\mathrm{close}}\Delta^+_{j,i}\right),
   \label{eq:local-noise-update}
 \end{equation}
-where $\Delta^-_{j,i}$ denotes evidence favoring reopening and $\Delta^+_{j,i}$ evidence favoring stabilization. The current implementation does not instantiate separate support/conflict heads. Instead, the neural core directly predicts a bounded local-noise delta together with a \textsc{keep}, \textsc{reopen}, or \textsc{stabilize} action, and the runtime lifecycle gate applies the legal transition. Evidence-linked display positions are revised analogously through the learned $\chi_k$ routing, remasking, and bounded visible-token revision.
+where $\Delta^-_{j,i}$ denotes evidence favoring reopening and $\Delta^+_{j,i}$ evidence favoring stabilization. The current implementation directly predicts a bounded local-noise delta together with a \textsc{keep}, \textsc{reopen}, or \textsc{stabilize} action through the neural core, with the runtime lifecycle gate applying the legal transition and no separate support/conflict heads. Evidence-linked display positions are revised analogously through the learned $\chi_k$ routing, remasking, and bounded visible-token revision.
 
-Local reopening is important for efficiency as well as correctness. New evidence should revise the state it invalidates, but it should not discard unrelated work that was already correct. Adjusting editability per cell therefore aims to preserve useful computation while concentrating additional denoising on regions that actually need correction.
+Local reopening is important for efficiency as well as correctness. New evidence should revise invalidated state while preserving unrelated work that was already correct. Adjusting editability per cell therefore aims to preserve useful computation while concentrating additional denoising on regions that actually need correction.
 
 \subsection{Asynchronous Runtime}
 \label{sec:runtime}
 
-\Cref{fig:cid-runtime} describes the runtime loop. Model denoising may continue while read-only work is outstanding, but only until a learned \emph{current-information equilibrium} signal fires. The runtime then pauses if required work remains and resumes on external progress; otherwise it forms a terminal candidate.
+\Cref{fig:cid-runtime} describes the runtime loop. Model denoising may continue while read-only work is outstanding until a learned \emph{current-information equilibrium} signal fires. The runtime then pauses if required work remains and resumes on external progress; otherwise it forms a terminal candidate.
 
-The runtime is asynchronous for a direct performance reason: waiting for retrieval, file I/O, or another read-only source should not automatically become idle model time. CID allows the model to refine source-independent cognition and display regions while the job is in flight, then revises dependent regions after arrival. End-to-end latency improves when this waiting-time computation remains useful, so the evaluation measures end-to-end latency at matched answer quality and treats token-generation speed as an insufficient metric on its own.
+The runtime uses retrieval, file-I/O, and other read-only waiting periods for source-independent refinement. CID continues refining cognition and display regions while the job is in flight, then revises dependent regions after arrival. End-to-end latency improves when this waiting-time computation remains useful, so the evaluation measures end-to-end latency at matched answer quality and treats token-generation speed as an insufficient metric on its own.
 
 Initialization sets facts $F$, an initial thought state $T$, masked display $Y$, bindings $\mathcal{B}=\varnothing$, and jobs $\mathcal{J}=\varnothing$. Each model update exposes information needs; the runtime matches or updates bindings, launches a read when policy requires a fresh value and no equivalent job is active, consumes events, and re-projects cached values when external access is unnecessary. The model adjusts local noise until current-information equilibrium or a budget boundary; quiescent waiting consumes no model-update budget. Before termination, a freshness barrier completes required bindings and refreshes due values, with new evidence resuming refinement. External work is keyed by source and canonicalized arguments, and a completion applies only when an active binding still has the same work key, making obsolete work cancellable or discardable. Equivalent jobs are deduplicated without suppressing repeated perception: identical needs may share one cached value while receiving fresh projections. A refined need can update a binding's selector, while independent verification can establish another binding. The step cap bounds model updates; a separate wall-clock budget bounds the trajectory.
 
@@ -216,7 +216,7 @@ The same termination mechanism also provides a natural test-time compute control
 \noindent\textbf{TRAINING OBJECTIVE}\par\vspace{2pt}
 CID requires a model trained for channel semantics and asynchronous events. A training trajectory contains a task $x$, protected facts $F$, tool/source descriptors $\mathcal{D}$, external event sequence $E=(e_1,\ldots,e_K)$ with arrival times, target thought structures $T^*$ or weak structural supervision, and final display $Y^*$.
 
-Training varies event-arrival schedules and source-freshness demands across trajectories. Before a needed event arrives, the model should maintain uncertainty, expose a binding need, and avoid fabricating the missing value. Closed-loop targets are conditioned on the observations actually obtained by the rollout: if a required event has not arrived, thought and display supervision remain at an unresolved pre-observation state rather than advancing to the teacher's future fact-bearing state. Training and runtime also share the same canonical unresolved display initialization, with an explicit EOS boundary followed by latent canvas capacity. Cache reuse remains runtime-owned and is exercised separately through runtime controls. Waiting and final snapshots supervise the equilibrium signal; runtime state distinguishes quiescence from termination. After arrival, the model should assimilate the percept, revise affected cells, preserve unrelated cognition, and update the display.
+Training varies event-arrival schedules and source-freshness demands across trajectories. Before a needed event arrives, the model should maintain uncertainty, expose a binding need, and avoid fabricating the missing value. Closed-loop targets are conditioned on the observations actually obtained by the rollout: thought and display supervision remain at an unresolved pre-observation state until each required event arrives. Training and runtime also share the same canonical unresolved display initialization, with an explicit EOS boundary followed by latent canvas capacity. Cache reuse remains runtime-owned and is exercised separately through runtime controls. Waiting and final snapshots supervise the equilibrium signal; runtime state distinguishes quiescence from termination. After arrival, the model should assimilate the percept, revise affected cells, preserve unrelated cognition, and update the display.
 
 A possible objective is
 \begin{align}

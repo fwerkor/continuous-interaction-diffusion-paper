@@ -87,7 +87,7 @@ source:
     max_age_ms: 1000
 \end{verbatim}
 
-The runtime should not require that every source support every property. A calculator may be cacheable but not streamable; a clock is dynamic but inexpensive; a file may expose a version identifier; a search endpoint may return incremental results without a stable version.
+Source descriptors support heterogeneous capabilities. A calculator may be cacheable without streaming support; a clock is dynamic and inexpensive; a file may expose a version identifier; a search endpoint may return incremental results without a stable version.
 
 \section{Binding State Machine}
 \label{app:binding-state}
@@ -165,7 +165,7 @@ The diagnostic prototype and corrected retraining draw from the released \texttt
 2,589,664 adjacent snapshot transitions plus 421,798 virtual empty-state bootstrap transitions, for
 3,011,462 trainable transitions. Maximum trajectory length is 44 snapshots and the maximum required
 TCT capacity is 128. Its recorded SHA-256 is
-\texttt{bec927029445815f085f5597ac1e4519}\allowbreak\texttt{6e8c64995793e218bc7f73df52eb8492}; the corrected v3 materialization is frozen and recorded with the formal checkpoint rather than silently reusing this pre-v3 hash.
+\texttt{bec927029445815f085f5597ac1e4519}\allowbreak\texttt{6e8c64995793e218bc7f73df52eb8492}; the corrected v3 materialization is frozen and recorded explicitly with the formal checkpoint, preventing accidental reuse of this pre-v3 hash.
 Semantic-task balancing is applied before component weights, and the global transition-weight mean is
 normalized to one. Of the 192,297 semantic tasks, 134,750 (70.07\%) require tools, 43,933 (22.85\%)
 require no tool, and 13,614 (7.08\%) expose tools that are unnecessary. The latter two groups provide
@@ -248,10 +248,9 @@ chain-of-thought transcripts are excluded. Physical slot placement and event tim
 
 The initial Stage-A prototype was run with data-parallel RTX A6000 48\,GB GPUs and resumed across world sizes while
 preserving effective batch 32. The final phase used two GPUs with gradient accumulation 16; earlier
-four-GPU phases used accumulation 8. The backbone parameters have \texttt{requires\_grad=False}, but
-the forward and input-gradient path still traverses the full decoder because CID projections precede
-it. Thus Stage A is materially cheaper in optimizer state and parameter-gradient computation than
-Stage B, but it is not equivalent to training only a small standalone 454M network.
+four-GPU phases used accumulation 8. The backbone parameters have \texttt{requires\_grad=False}. The forward and input-gradient path still traverses
+the full decoder because CID projections precede it. Stage A is therefore materially cheaper in optimizer
+state and parameter-gradient computation than Stage B while still exercising the full decoder path.
 
 The loss weights in the initial prototype are: thought 1.0, display 1.0, convergence 0.2, allocation 0.3,
 roles 0.2, uncertainty 0.1, local-noise delta 0.1, lifecycle 0.1, information-need intent 0.5,
