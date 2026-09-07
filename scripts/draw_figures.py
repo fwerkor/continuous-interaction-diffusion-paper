@@ -1,0 +1,255 @@
+#!/usr/bin/env python3
+"""Deterministic, publication-sized vector figures. Run from any directory.
+
+Requires matplotlib 3.10.9. PDFs embed TrueType fonts; SVGs outline glyphs,
+so rendering does not depend on the viewer's installed fonts.
+Coordinates and type sizes are in points at the final placement size.
+"""
+from pathlib import Path
+import os
+os.environ.setdefault("SOURCE_DATE_EPOCH", "1788739200")
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle, FancyArrowPatch, Circle, Polygon
+from matplotlib.path import Path as MPath
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "figures"
+PREVIEW = ROOT / "build" / "figure-preview"
+plt.rcParams.update({
+    "font.family": "DejaVu Sans", "font.size": 8,
+    "mathtext.fontset": "dejavusans", "pdf.fonttype": 42,
+    "svg.fonttype": "path", "svg.hashsalt": "cid-figures-v1",
+})
+INK = "#253246"
+MUTED = "#536278"
+RULE = "#D7DFE9"
+BLUE = "#286B9A"
+PURPLE = "#6950A1"
+TEAL = "#21796C"
+AMBER = "#A36621"
+PALE = {BLUE: "#EDF5FA", PURPLE: "#F1EDF8", TEAL: "#EDF7F3", AMBER: "#FBF3E6", INK: "#F3F5F8"}
+
+class Drawing:
+    def __init__(self, name, w, h):
+        self.name, self.w, self.h = name, w, h
+        self.fig = plt.figure(figsize=(w/72, h/72))
+        self.ax = self.fig.add_axes([0, 0, 1, 1])
+        self.ax.set(xlim=(0,w), ylim=(h,0))
+        self.ax.axis("off")
+        self.texts = []
+    def text(self,x,y,s,size=8,color=INK,weight="normal",ha="left",**kw):
+        t=self.ax.text(x,y,s,fontsize=size,color=color,weight=weight,
+                      ha=ha,va="center",linespacing=1.35,**kw)
+        self.texts.append(t)
+        return t
+    def rect(self,x,y,w,h,fill="white",edge=RULE,lw=.7):
+        self.ax.add_patch(Rectangle((x,y),w,h,facecolor=fill,edgecolor=edge,linewidth=lw))
+    def line(self,points,color=RULE,lw=.8,dash=False):
+        self.ax.plot(*zip(*points),color=color,lw=lw,ls=(0,(3,2)) if dash else "-",solid_capstyle="round")
+    def arrow(self,points,color=INK,dash=False,lw=.9):
+        path=MPath(points,[MPath.MOVETO]+[MPath.LINETO]*(len(points)-1))
+        self.ax.add_patch(FancyArrowPatch(path=path,arrowstyle="-|>",mutation_scale=7,
+                       linewidth=lw,color=color,linestyle=(0,(3,2)) if dash else "-",
+                       capstyle="round",joinstyle="round"))
+    def box(self,x,y,w,h,title,color=PURPLE,sub=None,size=8):
+        self.rect(x,y,w,h,PALE[color],color,.65)
+        if sub:
+            self.text(x+w/2,y+h/2-6,title,size,color,"bold",ha="center")
+            self.text(x+w/2,y+h/2+7,sub,7,ha="center")
+        else:
+            self.text(x+w/2,y+h/2,title,size,ha="center")
+    def label(self,x,y,s,color=MUTED,ha="center"):
+        self.text(x,y,s,7,color,ha=ha,bbox=dict(facecolor="white",edgecolor="none",pad=1.1))
+    def dot(self,x,y,color=PURPLE,r=2.7):
+        self.ax.add_patch(Circle((x,y),r,facecolor=color,edgecolor="white",lw=.6))
+    def save(self):
+        self.fig.canvas.draw()
+        renderer=self.fig.canvas.get_renderer()
+        frame=self.fig.bbox
+        for t in self.texts:
+            b=t.get_window_extent(renderer)
+            if b.x0<frame.x0 or b.x1>frame.x1 or b.y0<frame.y0 or b.y1>frame.y1:
+                raise ValueError(f"{self.name}: clipped text {t.get_text()!r}")
+        OUT.mkdir(exist_ok=True)
+        PREVIEW.mkdir(parents=True,exist_ok=True)
+        self.fig.savefig(OUT/f"{self.name}.pdf",metadata={"Title":self.name,"Creator":"CID vector figure generator","CreationDate":None,"ModDate":None})
+        self.fig.savefig(OUT/f"{self.name}.svg",metadata={"Date":None})
+        self.fig.savefig(PREVIEW/f"{self.name}.png",dpi=220)
+        plt.close(self.fig)
+
+def timing():
+    d=Drawing("interface-timing",484,190)
+    d.text(5,12,"a",10,PURPLE,"bold")
+    d.text(19,12,"Turn-based AR",9,INK,"bold")
+    d.text(479,12,"Discrete call / observation boundaries",7,MUTED,ha="right")
+    xs=[5,85,170,247,333,411]
+    ws=[61,67,59,68,60,68]
+    labels=["Reason","Explicit call","Wait","Observation","Done?","Response"]
+    colors=[PURPLE,AMBER,INK,BLUE,INK,TEAL]
+    for x,w,l,c in zip(xs,ws,labels,colors): d.box(x,45,w,24,l,c)
+    for i in range(5): d.arrow([(xs[i]+ws[i],57),(xs[i+1],57)])
+    d.arrow([(363,45),(363,30),(35,30),(35,45)])
+    d.label(378,32,"no")
+    d.label(402,49,"yes")
+    d.line([(5,84),(479,84)])
+    d.text(5,98,"b",10,PURPLE,"bold")
+    d.text(19,98,"CID on a dLLM",9,INK,"bold")
+    d.text(479,98,"One evolving, revisable trajectory",7,MUTED,ha="right")
+    for x,w,s in [(40,38,r"$s_i$"),(105,43,r"$s_{i+1}$"),(222,38,r"$s_j$"),(289,43,r"$s_{j+1}$")]:
+        d.box(x,125,w,23,s)
+    for a,b in [(5,40),(78,105),(148,222),(260,289),(332,362)]:
+        d.arrow([(a,136.5),(b,136.5)],PURPLE)
+    for x in [17,183,349]: d.label(x,136.5,r"$\cdots$",PURPLE)
+    d.box(362,125,65,23,"Converged?",INK,size=7)
+    d.box(442,125,37,23,"Final",TEAL,size=7.5)
+    d.arrow([(427,136.5),(442,136.5)])
+    d.label(434,128,"yes")
+    d.arrow([(397,148),(397,164),(349,164),(349,144)],PURPLE)
+    d.label(410,158,"no")
+    d.label(59,116,"need emerges")
+    d.label(241,116,"assimilate result")
+    d.box(26,165,66,21,"Bind + launch",AMBER,size=7)
+    d.box(119,165,87,21,"External read in flight",BLUE,size=7)
+    d.arrow([(59,148),(59,165)],AMBER)
+    d.arrow([(92,175.5),(119,175.5)],AMBER)
+    d.arrow([(206,175.5),(241,175.5),(241,148)],BLUE)
+    d.save()
+
+def overview():
+    d=Drawing("cid-overview",484,252)
+    # Three channel bands with structural contents, not generic flowchart nodes.
+    for x,w,c,title,sub in [
+        (5,132,BLUE,"FACT  "+r"$F_s$","External write authority"),
+        (176,132,PURPLE,"THOUGHT  "+r"$T_s$","Typed Cognitive Tensor"),
+        (347,132,TEAL,"DISPLAY  "+r"$Y_s$","User-visible token canvas")]:
+        d.rect(x,45,w,92,PALE[c],edge="none")
+        d.line([(x,45),(x+w,45)],c,2)
+        d.text(x+9,57,title,9,c,"bold")
+        d.text(x+9,73,sub,7)
+    d.text(13,94,"value",7,BLUE,"bold")
+    d.text(60,94,"version",7,BLUE,"bold")
+    d.text(13,111,"source + provenance",7.5)
+    # Compact semantic matrix and aligned typed fields.
+    for row in range(3):
+        for col in range(6):
+            d.rect(185+col*10,88+row*10,8,8,
+                   ["#D4C5E9","#B9A3D9","#E2D8EE"][(row+col)%3],edge="none")
+    d.text(255,96,"roles",7)
+    d.text(255,109,"anchors / links",6.6)
+    for row,length in enumerate([111,93,105]):
+        for col in range(length//13):
+            d.rect(356+col*13,88+row*10,10,5,
+                   "#8AB8AC" if (row+col)%4 else "#D6E9E2",edge="none")
+    d.arrow([(137,89),(176,89)],BLUE)
+    d.label(156.5,101,"condition",BLUE)
+    d.arrow([(308,89),(347,89)],PURPLE)
+    d.label(327.5,101,"realize",PURPLE)
+    d.arrow([(413,45),(413,22),(242,22),(242,45)],TEAL)
+    d.label(327,12,"format / length feedback",TEAL)
+    d.text(71,127,"Model-read-only",7,BLUE,ha="center")
+    d.text(242,127,"Revisable cells",7,PURPLE,ha="center")
+    d.text(413,127,"Revisable tokens",7,TEAL,ha="center")
+    # Read-only sources and runtime are independent participants.
+    d.rect(5,195,132,51,"white",BLUE)
+    d.text(14,207,"READ-ONLY SOURCES",8,BLUE,"bold")
+    d.text(14,224,"Search  /  files  /  state",7.5)
+    d.text(14,236,"Calculators",7.5)
+    d.rect(176,195,190,51,PALE[AMBER],AMBER)
+    d.text(186,207,"CID RUNTIME",8,AMBER,"bold")
+    d.text(186,224,"Intent readout  /  persistent bindings",7.5)
+    d.text(186,237,"Cache  /  refresh  /  event handling",7.5)
+    d.arrow([(34,195),(34,137)],BLUE)
+    d.label(36,157,"external",BLUE,ha="left")
+    d.label(36,167,"updates",BLUE,ha="left")
+    d.arrow([(242,137),(242,195)],PURPLE)
+    d.label(248,179,"latent needs",PURPLE,ha="left")
+    d.arrow([(176,222),(137,222)],AMBER)
+    d.label(156,207,"bind /",AMBER)
+    d.label(156,216,"refresh",AMBER)
+    d.arrow([(117,195),(117,164),(195,164),(195,137)],BLUE,True)
+    d.label(156,155,"perceptual projections",BLUE)
+    d.save()
+
+def anatomy():
+    d=Drawing("tct-anatomy",232,207)
+    d.text(6,13,"Cognitive cell",10,PURPLE,"bold")
+    d.text(225,13,r"$c_{s,i}$",12,PURPLE,ha="right")
+    d.rect(5,29,222,40,PALE[PURPLE],edge="none")
+    d.line([(5,29),(227,29)],PURPLE,1.5)
+    d.text(14,42,r"$h_{s,i}\in\mathbb{R}^d$",11,PURPLE)
+    d.text(101,42,"Semantic content",8,INK,"bold")
+    for i in range(20):
+        d.rect(14+i*10.3,55,7.5,6,["#C3B0DF","#E0D5EE","#9274BA"][i%3],edge="none")
+    rows=[
+        (r"$r_{s,i}$","Soft role",PURPLE),
+        (r"$a_{s,i}$","Symbolic anchors",BLUE),
+        (r"$q_{s,i}$","Source / cell links",BLUE),
+        (r"$u_{s,i}$","Uncertainty",AMBER),
+        (r"$\tau_{s,i}$","Local diffusion level",AMBER),
+        (r"$\ell_{s,i}$","Lifecycle state",TEAL)]
+    for i,(s,t,c) in enumerate(rows):
+        y=80+i*20
+        d.rect(5,y-7,32,18,PALE[c],edge="none")
+        d.text(21,y+2,s,9,c,ha="center")
+        d.text(46,y+2,t,8)
+        d.line([(46,y+12),(227,y+12)],RULE,.5)
+    d.save()
+
+def binding():
+    d=Drawing("binding-lifecycle",484,163)
+    d.text(5,11,"Persistent binding",10,AMBER,"bold")
+    d.text(479,11,"Reuse the value as cognition evolves",7,MUTED,ha="right")
+    xs=[5,103,201,299,397]
+    for x,title,sub,c in [
+        (5,"Active need","information request",PURPLE),
+        (103,"Binding",r"$b_j$",AMBER),
+        (201,"Cached value","version + provenance",BLUE),
+        (299,"Projection",r"$P_j^s$",PURPLE),
+        (397,"Evolving state","thought + display",TEAL)]:
+        d.box(x,54,82,35,title,c,sub,8)
+    for a,b in zip(xs,xs[1:]): d.arrow([(a+82,71.5),(b,71.5)])
+    d.arrow([(438,54),(438,34),(340,34),(340,54)],PURPLE,True)
+    d.label(388,25,"active need: re-project",PURPLE)
+    d.box(103,125,82,27,"Retire binding",INK,size=8)
+    d.arrow([(144,89),(144,125)],INK)
+    d.label(144,107,"need inactive")
+    d.box(201,125,108,27,"External read / refresh",BLUE,size=7.5)
+    d.arrow([(242,125),(242,89)],BLUE)
+    d.label(251,103,"first fetch or",BLUE,ha="left")
+    d.label(251,114,"source-version change",BLUE,ha="left")
+    d.save()
+
+def runtime():
+    d=Drawing("runtime-loop",484,184)
+    for y,title,color in [(51,"MODEL",PURPLE),(106,"RUNTIME",AMBER),(161,"SOURCES",BLUE)]:
+        d.rect(5,y-17,474,34,PALE[color],edge="none")
+        d.text(11,y,title,7,color,"bold")
+    d.box(72,37,77,28,"Denoise "+r"$T,Y$",PURPLE,size=8)
+    d.box(165,37,82,28,"Expose needs "+r"$I$",PURPLE,size=7.5)
+    d.box(279,37,91,28,"Assimilate arrivals",PURPLE,size=7.5)
+    d.box(396,37,78,28,"Adjust local noise",PURPLE,size=7.2)
+    d.arrow([(149,51),(165,51)],PURPLE)
+    d.arrow([(370,51),(396,51)],PURPLE)
+    d.arrow([(435,37),(435,16),(110,16),(110,37)],PURPLE)
+    d.label(271,7,"next active update",PURPLE)
+    d.box(165,92,82,28,"Match / update\nbinding",AMBER,size=7.5)
+    d.box(279,92,91,28,"Reuse, refresh,\nor launch",AMBER,size=7.5)
+    d.box(396,92,78,28,"Consume events",AMBER,size=7.5)
+    d.arrow([(206,65),(206,92)],PURPLE)
+    d.arrow([(247,106),(279,106)],AMBER)
+    d.arrow([(309,92),(309,65)],BLUE,True)
+    d.label(300,78,"cached re-projection",BLUE,ha="right")
+    d.arrow([(435,92),(435,78),(351,78),(351,65)],BLUE)
+    d.box(279,147,91,28,"Read-only external\nwork",BLUE,size=7.5)
+    d.arrow([(324,120),(324,147)],BLUE,True)
+    d.label(333,134,"async",BLUE,ha="left")
+    d.arrow([(370,161),(435,161),(435,120)],BLUE,True)
+    d.label(435,177,"completion event",BLUE)
+    d.save()
+
+if __name__=="__main__":
+    for draw in (timing,overview,anatomy,binding,runtime):
+        draw()
+    print("Wrote five vector PDF/SVG pairs and 220 dpi previews.")

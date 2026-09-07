@@ -22,3 +22,5 @@ Thumbs.db
 .vscode/settings.json
 __pycache__/
 *.py[cod]
+
+!figures/*.pdf

@@ -3,12 +3,15 @@ ROOT := paper.tex
 OUT := build
 PDF := $(OUT)/paper.pdf
 
-.PHONY: all build watch check test lint clean dist help
+.PHONY: all build figures watch check test lint clean dist help
 
 all: build
 
 build:
 	./scripts/build.sh
+
+figures:
+	python3 scripts/draw_figures.py
 
 watch:
 	mkdir -p $(OUT)
