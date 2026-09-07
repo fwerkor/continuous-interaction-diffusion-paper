@@ -1225,16 +1225,8 @@ z
     </g>
    </g>
    <g id="text_11">
-    <g id="patch_33">
-     <path d="M 394.831563 41.507344
-L 409.168438 41.507344
-L 409.168438 32.492656
-L 394.831563 32.492656
-z
-" style="fill: #ffffff"/>
-    </g>
     <!-- yes -->
-    <g style="fill: #536278" transform="translate(395.951563 38.931563) scale(0.07 -0.07)">
+    <g style="fill: #536278" transform="translate(395.951563 51.931563) scale(0.07 -0.07)">
      <defs>
       <path id="DejaVuSans-79" d="M 2059 -325
 Q 1816 -950 1584 -1140
@@ -1618,7 +1610,7 @@ z
     </g>
    </g>
    <g id="text_19">
-    <g id="patch_34">
+    <g id="patch_33">
      <path d="M 12.38 141.007344
 L 21.62 141.007344
 L 21.62 131.992656
@@ -1653,7 +1645,7 @@ z
     </g>
    </g>
    <g id="text_20">
-    <g id="patch_35">
+    <g id="patch_34">
      <path d="M 178.38 141.007344
 L 187.62 141.007344
 L 187.62 131.992656
@@ -1667,7 +1659,7 @@ z
     </g>
    </g>
    <g id="text_21">
-    <g id="patch_36">
+    <g id="patch_35">
      <path d="M 344.38 141.007344
 L 353.62 141.007344
 L 353.62 131.992656
@@ -1744,23 +1736,15 @@ z
     </g>
    </g>
    <g id="text_24">
-    <g id="patch_37">
-     <path d="M 427.331563 121.507344
-L 441.668438 121.507344
-L 441.668438 112.492656
-L 427.331563 112.492656
-z
-" style="fill: #ffffff"/>
-    </g>
     <!-- yes -->
-    <g style="fill: #536278" transform="translate(428.451563 118.931562) scale(0.07 -0.07)">
+    <g style="fill: #536278" transform="translate(428.451563 131.431562) scale(0.07 -0.07)">
      <use xlink:href="#DejaVuSans-79"/>
      <use xlink:href="#DejaVuSans-65" transform="translate(59.179688 0)"/>
      <use xlink:href="#DejaVuSans-73" transform="translate(120.703125 0)"/>
     </g>
    </g>
    <g id="text_25">
-    <g id="patch_38">
+    <g id="patch_36">
      <path d="M 404.520312 162.507344
 L 415.479688 162.507344
 L 415.479688 153.492656
@@ -1775,7 +1759,7 @@ z
     </g>
    </g>
    <g id="text_26">
-    <g id="patch_39">
+    <g id="patch_37">
      <path d="M 32.727578 120.507344
 L 85.272422 120.507344
 L 85.272422 111.492656
@@ -1832,7 +1816,7 @@ z
     </g>
    </g>
    <g id="text_27">
-    <g id="patch_40">
+    <g id="patch_38">
      <path d="M 211.079922 120.507344
 L 270.920078 120.507344
 L 270.920078 111.492656
