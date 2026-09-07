@@ -28,4 +28,5 @@ rejects text outside the artboard; this complements visual inspection.
 
 The selective-revision figure is an illustrative running example, not an empirical
 model trace. Overview TCT rows show example dominant soft roles; roles may
-overlap within a cell. The anatomy figure aligns rows with typed fields.
+overlap within a cell. The anatomy figure expands one aligned row into a single bounded cell; internal
+positions and visual values are schematic, not a neural architecture or a measured state.

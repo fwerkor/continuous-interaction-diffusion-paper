@@ -11,7 +11,7 @@ os.environ.setdefault("SOURCE_DATE_EPOCH", "1788739200")
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, FancyArrowPatch, Circle, Polygon
+from matplotlib.patches import Rectangle, FancyArrowPatch, Circle, Polygon, Ellipse, PathPatch
 from matplotlib.path import Path as MPath
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -183,7 +183,8 @@ def overview():
     d.save()
 
 def anatomy():
-    d=Drawing("tct-anatomy",232,282)
+    """A single bounded cell contains all fields; positions are schematic."""
+    d=Drawing("tct-anatomy",232,289)
     d.text(6,11,"Typed Cognitive Tensor",10,PURPLE,"bold")
     d.text(44,29,r"$H_s$: semantic vectors",7,PURPLE)
     d.text(154,29,"aligned fields",7,MUTED)
@@ -196,27 +197,53 @@ def anatomy():
             d.rect(45+col*8,y,6,6,["#C3B0DF","#E0D5EE","#9274BA"][(col+row)%3],edge="none")
         for col,symbol in enumerate(["r","a","q","u",r"\tau",r"\ell"]):
             d.text(159+col*12,y+3,"$"+symbol+"$",6.5,MUTED,ha="center")
-    d.arrow([(5,57),(1,57),(1,89),(45,89)],PURPLE)
-    d.text(51,89,"one cell, expanded below",7,PURPLE)
-    d.rect(5,104,222,40,PALE[PURPLE],edge="none")
-    d.line([(5,104),(227,104)],PURPLE,1.5)
-    d.text(14,117,r"$h_{s,i}\in\mathbb{R}^d$",11,PURPLE)
-    d.text(101,117,"Semantic content",8,INK,"bold")
-    for i in range(20):
-        d.rect(14+i*10.3,130,7.5,6,["#C3B0DF","#E0D5EE","#9274BA"][i%3],edge="none")
-    rows=[
-        (r"$r_{s,i}$","Soft role",PURPLE),
-        (r"$a_{s,i}$","Symbolic anchors",BLUE),
-        (r"$q_{s,i}$","Source / cell links",BLUE),
-        (r"$u_{s,i}$","Uncertainty",AMBER),
-        (r"$\tau_{s,i}$","Local diffusion level",AMBER),
-        (r"$\ell_{s,i}$","Lifecycle state",TEAL)]
-    for i,(s,t,c) in enumerate(rows):
-        y=155+i*20
-        d.rect(5,y-7,32,18,PALE[c],edge="none")
-        d.text(21,y+2,s,9,c,ha="center")
-        d.text(46,y+2,t,8)
-        d.line([(46,y+12),(227,y+12)],RULE,.5)
+    d.line([(227,56),(230,56),(230,83),(186,98)],PURPLE,.7,True)
+    d.text(6,85,r"One cognitive cell $c_{s,i}$",8,PURPLE,"bold")
+    # One enclosing, gently curved contour. Internal locations do not imply
+    # physical compartments or neural architecture.
+    verts=[(30,99),(73,93),(159,93),(201,99),
+           (220,102),(225,128),(225,162),
+           (225,203),(219,242),(205,260),
+           (184,284),(57,284),(28,266),
+           (9,254),(7,220),(7,175),
+           (7,130),(10,104),(30,99)]
+    codes=[MPath.MOVETO]+[MPath.CURVE4]*18
+    d.ax.add_patch(PathPatch(MPath(verts,codes),facecolor="#F7F4FB",edgecolor=PURPLE,lw=1.1))
+    # A semantic nucleus, surrounded by compact visual encodings of its
+    # aligned typed attributes. All seven fields stay inside the same outline.
+    d.ax.add_patch(Ellipse((116,181),96,64,facecolor="white",edgecolor="#B9A3D9",lw=.9))
+    d.text(116,167,r"$h_{s,i}\in\mathbb{R}^d$",10,PURPLE,ha="center")
+    d.text(116,183,"semantic core",8,INK,"bold",ha="center")
+    for row in range(2):
+        for col in range(9):
+            d.rect(86+col*7,194+row*6,5,4,
+                   ["#C3B0DF","#E0D5EE","#9274BA"][(row+col)%3],edge="none")
+    # Soft roles: a mixture, not a single categorical label.
+    d.text(116,111,r"soft roles $r$",7,PURPLE,ha="center")
+    for x,h,c in [(97,9,"#9274BA"),(108,16,"#B9A3D9"),(119,6,"#D5C8E7"),(130,12,"#A990C9")]:
+        d.rect(x,139-h,7,h,c,edge="none")
+    # Exact symbolic anchors represented by a tag with an immutable token.
+    d.text(43,151,r"anchors $a$",7,BLUE,ha="center")
+    d.ax.add_patch(Polygon([(21,162),(54,162),(63,172),(54,182),(21,182)],
+                          closed=True,facecolor=PALE[BLUE],edgecolor=BLUE,lw=.7))
+    d.text(39,172,"#42",7,BLUE,"bold",ha="center")
+    d.ax.add_patch(Circle((56,172),1.6,facecolor="white",edgecolor=BLUE,lw=.6))
+    # Source/cell links are relationships rather than another vector.
+    d.text(189,151,r"links $q$",7,BLUE,ha="center")
+    d.line([(180,170),(201,163),(200,183),(180,170)],BLUE,.7)
+    for x,y in [(180,170),(201,163),(200,183)]: d.dot(x,y,BLUE,3.2)
+    # Distinct encodings avoid turning the lower half into another field list.
+    d.text(49,219,r"uncertainty $u$",7,AMBER,ha="center")
+    for j in range(5):
+        d.rect(27+j*9,229,7,7,AMBER if j<3 else "#EBD9C1",edge="none")
+    d.text(183,219,r"lifecycle $\ell$",7,TEAL,ha="center")
+    d.ax.add_patch(Circle((167,235),4,facecolor=PALE[TEAL],edgecolor=TEAL,lw=.7))
+    d.dot(167,235,TEAL,2.4)
+    d.text(176,235,"active",7,TEAL)
+    d.text(116,248,r"editability $\tau$",7,AMBER,ha="center")
+    d.line([(87,261),(145,261)],"#D6C5AC",2)
+    d.line([(87,261),(121,261)],AMBER,2)
+    d.ax.add_patch(Circle((121,261),3.4,facecolor="white",edgecolor=AMBER,lw=1,zorder=3))
     d.save()
 
 def binding():
