@@ -268,7 +268,7 @@ def runtime():
     d.arrow([(324,120),(324,147)],BLUE,True)
     d.label(333,134,"async",BLUE,ha="left")
     d.arrow([(370,161),(435,161),(435,120)],BLUE,True)
-    d.label(435,177,"completion event",BLUE)
+    d.text(402.5,169,"completion event",7,BLUE,ha="center")
     d.save()
 
 
