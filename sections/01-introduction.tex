@@ -18,7 +18,7 @@ This paper formalizes the architecture and makes the design precise enough to im
   \item We formulate the mismatch between turn-based tool protocols and continuously revisable diffusion generation, and define continuous tool interaction as a model--runtime problem.
   \item We introduce a three-channel architecture with an externally controlled fact channel, a typed continuous thought channel, and a discrete display channel.
   \item We define persistent perceptual bindings that distinguish repeated cognitive refresh from repeated external execution, supporting both static and changing information sources.
-  \item We specify an asynchronous runtime, local diffusion clocks, model-side intent interface, training objectives, and a concrete evaluation protocol for read-only tools.
+  \item We specify an asynchronous runtime, local diffusion clocks, model-side intent interface, training objectives, and a concrete evaluation protocol instantiated with read-only tools.
 \end{itemize}
 
 The remainder of the paper reviews the necessary background and derives the design requirements in \cref{sec:background}, formalizes \cid in \cref{sec:method}, describes the training and evaluation methodology in \cref{sec:experiments}, relates the architecture to prior work in \cref{sec:related-work}, and discusses limitations in \cref{sec:discussion}.

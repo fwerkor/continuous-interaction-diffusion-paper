@@ -116,7 +116,7 @@ The adapter exposes a typed interface over the cognitive field. This choice pres
                           &\rightarrow \text{argument binding}.
   \end{aligned}
 \end{equation}
-For read-only tools, a binding may begin before every argument has reached textual certainty, provided the source accepts approximate or progressively refined selectors.
+For read-only tools, a binding may begin before every argument has reached textual certainty, provided the source accepts approximate or progressively refined selectors. Side-effecting actions may expose and refine intent equally early, but external execution should remain behind a runtime-controlled commit boundary.
 
 \begin{figure*}[t]
   \centering
@@ -182,7 +182,7 @@ where $g_{j,s}$ is predicted from need persistence, relevance, and source freshn
 \begin{figure*}[t]
   \centering
   \input{figures/runtime-loop}
-  \caption{CID runtime loop for read-only perception.}
+  \caption{CID runtime loop in the read-only evaluation setting.}
   \label{fig:cid-runtime}
 \end{figure*}
 
@@ -202,9 +202,9 @@ Local reopening is important for efficiency as well as correctness. New evidence
 \subsection{Asynchronous Runtime}
 \label{sec:runtime}
 
-\Cref{fig:cid-runtime} describes the runtime loop. Model denoising may continue while read-only work is outstanding until a learned \emph{current-information equilibrium} signal fires. The runtime then pauses if required work remains and resumes on external progress; otherwise it forms a terminal candidate.
+\Cref{fig:cid-runtime} describes the runtime loop in the evaluated read-only setting. Model denoising may continue while external work is outstanding until a learned \emph{current-information equilibrium} signal fires. The runtime then pauses if required work remains and resumes on external progress; otherwise it forms a terminal candidate.
 
-The runtime uses retrieval, file-I/O, and other read-only waiting periods for source-independent refinement. CID continues refining cognition and display regions while the job is in flight, then revises dependent regions after arrival. End-to-end latency improves when this waiting-time computation remains useful, so the evaluation measures end-to-end latency at matched answer quality and treats token-generation speed as an insufficient metric on its own.
+In the evaluated setting, the runtime uses retrieval, file-I/O, and other read-only waiting periods for source-independent refinement. CID continues refining cognition and display regions while the job is in flight, then revises dependent regions after arrival. End-to-end latency improves when this waiting-time computation remains useful, so the evaluation measures end-to-end latency at matched answer quality and treats token-generation speed as an insufficient metric on its own.
 
 Initialization sets facts $F$, an initial thought state $T$, masked display $Y$, bindings $\mathcal{B}=\varnothing$, and jobs $\mathcal{J}=\varnothing$. Each model update exposes information needs; the runtime matches or updates bindings, launches a read when policy requires a fresh value and no equivalent job is active, consumes events, and re-projects cached values when external access is unnecessary. The model adjusts local noise until current-information equilibrium or a budget boundary; quiescent waiting consumes no model-update budget. Before termination, a freshness barrier completes required bindings and refreshes due values, with new evidence resuming refinement. External work is keyed by source and canonicalized arguments, and a completion applies only when an active binding still has the same work key, making obsolete work cancellable or discardable. Equivalent jobs are deduplicated without suppressing repeated perception: identical needs may share one cached value while receiving fresh projections. A refined need can update a binding's selector, while independent verification can establish another binding. The step cap bounds model updates; a separate wall-clock budget bounds the trajectory.
 

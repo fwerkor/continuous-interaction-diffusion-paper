@@ -82,7 +82,7 @@ For tool interaction, however, an unrestricted latent tensor is not enough. The 
     Early, Non-Linguistic Intent & Latent Information Needs & An information need becomes usable before a complete tool name, query string, or JSON object has converged. \\
     Persistent Perception & Persistent Perceptual Bindings & The same external value can remain active without repeated I/O; changing sources can be refreshed or streamed. \\
     Joint Revision & Perceptual Assimilation & Conflicting evidence can reopen relevant regions while unrelated, well-supported content remains stable. \\
-    Continuous Evolution & Asynchronous Runtime & Reasoning and display generation continue while read-only external operations are in flight. \\
+    Continuous Evolution & Asynchronous Runtime & Reasoning and display generation continue while external operations are in flight. \\
     \bottomrule
   \end{tabular}
 \end{table*}
@@ -99,7 +99,7 @@ For tool interaction, however, an unrestricted latent tensor is not enough. The 
 The preceding background yields six requirements for a diffusion-native interaction architecture.
 
 \paragraph{Externally Controlled Facts.}
-Some values must remain outside the model's write authority, including user-pinned constraints, exact source values, and runtime-maintained state, while thought and display remain revisable. Such values can still change when their external source changes. Read-only therefore describes the model's permission over the value and is independent of whether that value remains constant over time.
+Some values must remain outside the model's write authority, including user-pinned constraints, exact source values, and runtime-maintained state, while thought and display remain revisable. Such values can still change when their external source changes. This ownership constraint concerns authority over values stored in CID and does not require external tools themselves to be read-only.
 
 \paragraph{Precise Symbolic Grounding.}
 Continuous representations must remain connected to exact external objects. Paths, numbers, entity identifiers, tool schemas, source versions, and provenance should be preserved through symbolic anchors and explicit source links because latent similarity alone does not guarantee exact identity.
@@ -114,4 +114,4 @@ An information need may remain relevant across many model updates. The system sh
 New observations should be able to affect several thought and display regions in one evolving state. The system needs selective reopening so conflicting evidence can make relevant regions revisable while unrelated, well-supported content remains stable.
 
 \paragraph{Continuous Evolution.}
-Reasoning and display generation should continue while read-only external operations are in flight. When a result arrives, it should condition the current trajectory directly, without requiring the system to restart reasoning as a separate model turn.
+Reasoning and display generation should continue while external operations are in flight. When a result arrives, it should condition the current trajectory directly, without requiring the system to restart reasoning as a separate model turn.
