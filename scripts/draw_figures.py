@@ -76,6 +76,8 @@ class Drawing:
         PREVIEW.mkdir(parents=True,exist_ok=True)
         self.fig.savefig(OUT/f"{self.name}.pdf",metadata={"Title":self.name,"Creator":"CID vector figure generator","CreationDate":None,"ModDate":None})
         self.fig.savefig(OUT/f"{self.name}.svg",metadata={"Date":None})
+        svg_path = OUT/f"{self.name}.svg"
+        svg_path.write_text("\n".join(line.rstrip() for line in svg_path.read_text().splitlines())+"\n")
         self.fig.savefig(PREVIEW/f"{self.name}.png",dpi=220)
         plt.close(self.fig)
 
@@ -92,7 +94,7 @@ def timing():
     for i in range(5): d.arrow([(xs[i]+ws[i],57),(xs[i+1],57)])
     d.arrow([(363,45),(363,30),(35,30),(35,45)])
     d.label(378,32,"no")
-    d.label(402,49,"yes")
+    d.label(402,37,"yes")
     d.line([(5,84),(479,84)])
     d.text(5,98,"b",10,PURPLE,"bold")
     d.text(19,98,"CID on a dLLM",9,INK,"bold")
@@ -105,7 +107,7 @@ def timing():
     d.box(362,125,65,23,"Converged?",INK,size=7)
     d.box(442,125,37,23,"Final",TEAL,size=7.5)
     d.arrow([(427,136.5),(442,136.5)])
-    d.label(434,128,"yes")
+    d.label(434.5,117,"yes")
     d.arrow([(397,148),(397,164),(349,164),(349,144)],PURPLE)
     d.label(410,158,"no")
     d.label(59,116,"need emerges")
@@ -131,13 +133,20 @@ def overview():
     d.text(13,94,"value",7,BLUE,"bold")
     d.text(60,94,"version",7,BLUE,"bold")
     d.text(13,111,"source + provenance",7.5)
-    # Compact semantic matrix and aligned typed fields.
-    for row in range(3):
-        for col in range(6):
-            d.rect(185+col*10,88+row*10,8,8,
-                   ["#D4C5E9","#B9A3D9","#E2D8EE"][(row+col)%3],edge="none")
-    d.text(255,96,"roles",7)
-    d.text(255,109,"anchors / links",6.6)
+    # Each row is a cell with semantics and illustrative dominant soft roles.
+    for row,role in enumerate(["plan", "need", "claim"]):
+        y=87+row*11
+        d.text(184,y+3,rf"$c_{row+1}$",6.5,PURPLE)
+        for col in range(5):
+            d.rect(200+col*7,y,5.5,6,
+                   ["#B9A3D9","#E2D8EE","#9274BA"][(row+col)%3],edge="none")
+        d.rect(239,y-1,20,8,"white",edge="none")
+        d.rect(240,y, [13,8,16][row],6,PALE[PURPLE],edge="none")
+        d.rect(240,y, [8,5,11][row],6,PURPLE,edge="none")
+        d.text(264,y+3,role,6.5)
+    d.line([(297,90),(303,90),(303,112),(297,112)],PURPLE,.6)
+    d.dot(297,90,PURPLE,1.8)
+    d.dot(297,112,PURPLE,1.8)
     for row,length in enumerate([111,93,105]):
         for col in range(length//13):
             d.rect(356+col*13,88+row*10,10,5,
@@ -168,20 +177,33 @@ def overview():
     d.arrow([(176,222),(137,222)],AMBER)
     d.label(156,207,"bind /",AMBER)
     d.label(156,216,"refresh",AMBER)
-    d.arrow([(117,195),(117,164),(195,164),(195,137)],BLUE,True)
-    d.label(156,155,"perceptual projections",BLUE)
+    d.arrow([(117,195),(117,176),(209,176),(209,137)],BLUE,True)
+    d.text(117,155,"perceptual",7,BLUE)
+    d.text(117,165,"projections",7,BLUE)
     d.save()
 
 def anatomy():
-    d=Drawing("tct-anatomy",232,207)
-    d.text(6,13,"Cognitive cell",10,PURPLE,"bold")
-    d.text(225,13,r"$c_{s,i}$",12,PURPLE,ha="right")
-    d.rect(5,29,222,40,PALE[PURPLE],edge="none")
-    d.line([(5,29),(227,29)],PURPLE,1.5)
-    d.text(14,42,r"$h_{s,i}\in\mathbb{R}^d$",11,PURPLE)
-    d.text(101,42,"Semantic content",8,INK,"bold")
+    d=Drawing("tct-anatomy",232,282)
+    d.text(6,11,"Typed Cognitive Tensor",10,PURPLE,"bold")
+    d.text(44,29,r"$H_s$: semantic vectors",7,PURPLE)
+    d.text(154,29,"aligned fields",7,MUTED)
+    for row in range(3):
+        y=40+row*12
+        if row==1:
+            d.rect(5,y-2,222,12,PALE[PURPLE],edge="none")
+        d.text(11,y+3,rf"$c_{{s,{['1','i','N'][row]}}}$",7,PURPLE)
+        for col in range(12):
+            d.rect(45+col*8,y,6,6,["#C3B0DF","#E0D5EE","#9274BA"][(col+row)%3],edge="none")
+        for col,symbol in enumerate(["r","a","q","u",r"\tau",r"\ell"]):
+            d.text(159+col*12,y+3,"$"+symbol+"$",6.5,MUTED,ha="center")
+    d.arrow([(5,57),(1,57),(1,89),(45,89)],PURPLE)
+    d.text(51,89,"one cell, expanded below",7,PURPLE)
+    d.rect(5,104,222,40,PALE[PURPLE],edge="none")
+    d.line([(5,104),(227,104)],PURPLE,1.5)
+    d.text(14,117,r"$h_{s,i}\in\mathbb{R}^d$",11,PURPLE)
+    d.text(101,117,"Semantic content",8,INK,"bold")
     for i in range(20):
-        d.rect(14+i*10.3,55,7.5,6,["#C3B0DF","#E0D5EE","#9274BA"][i%3],edge="none")
+        d.rect(14+i*10.3,130,7.5,6,["#C3B0DF","#E0D5EE","#9274BA"][i%3],edge="none")
     rows=[
         (r"$r_{s,i}$","Soft role",PURPLE),
         (r"$a_{s,i}$","Symbolic anchors",BLUE),
@@ -190,7 +212,7 @@ def anatomy():
         (r"$\tau_{s,i}$","Local diffusion level",AMBER),
         (r"$\ell_{s,i}$","Lifecycle state",TEAL)]
     for i,(s,t,c) in enumerate(rows):
-        y=80+i*20
+        y=155+i*20
         d.rect(5,y-7,32,18,PALE[c],edge="none")
         d.text(21,y+2,s,9,c,ha="center")
         d.text(46,y+2,t,8)
@@ -249,7 +271,45 @@ def runtime():
     d.label(435,177,"completion event",BLUE)
     d.save()
 
+
+def selective_revision():
+    """Conceptual running example, not a measured model trajectory."""
+    d=Drawing("selective-revision",484,218)
+    d.text(5,12,"Evidence changes linked regions",10,PURPLE,"bold")
+    d.text(479,12,"Illustrative state transition",7,MUTED,ha="right")
+    d.text(5,36,"Before arrival",9,INK,"bold")
+    d.text(190,36,"New evidence",9,BLUE,"bold")
+    d.text(330,36,"After assimilation",9,INK,"bold")
+    for x in [5,330]:
+        d.text(x,56,"TCT cells",7,PURPLE,"bold")
+    for y,left,right,c in [
+        (67,"plan: comparison structure","plan: unchanged",TEAL),
+        (101,"hypothesis: latency < 30 ms","hypothesis: reopen",AMBER),
+        (135,"claim: latency unresolved","claim: grounded in 37 ms",BLUE)]:
+        d.rect(5,y,149,25,PALE[c],edge=c,lw=.6)
+        d.text(11,y+12.5,left,7,c)
+        d.rect(330,y,149,25,PALE[c],edge=c,lw=.6)
+        d.text(336,y+12.5,right,7,c)
+    d.rect(183,97,108,53,PALE[BLUE],BLUE,.7)
+    d.text(192,109,"Documentation",7,BLUE,"bold")
+    d.text(192,126,"37 ms",12,BLUE,"bold")
+    d.text(192,140,"value + provenance",6.8,BLUE)
+    d.line([(291,124),(313,124)],BLUE,.8)
+    d.arrow([(313,124),(313,113.5),(330,113.5)],BLUE)
+    d.arrow([(313,124),(313,147.5),(330,147.5)],BLUE)
+    d.text(238,170,r"route via $\chi_j$",7,BLUE,ha="center")
+    d.arrow([(154,79.5),(330,79.5)],TEAL)
+    d.label(239,70,"preserve unrelated state",TEAL)
+    d.text(5,178,"Display",7,TEAL,"bold")
+    d.rect(5,187,149,24,PALE[TEAL],edge="none")
+    d.text(12,199,"Latency:  [unresolved]",7.5,TEAL)
+    d.rect(330,187,149,24,PALE[TEAL],edge="none")
+    d.text(337,199,"Latency:  37 ms",7.5,TEAL)
+    d.arrow([(154,199),(330,199)],TEAL)
+    d.label(239,190,"revise linked output",TEAL)
+    d.save()
+
 if __name__=="__main__":
-    for draw in (timing,overview,anatomy,binding,runtime):
+    for draw in (timing,overview,anatomy,binding,runtime,selective_revision):
         draw()
-    print("Wrote five vector PDF/SVG pairs and 220 dpi previews.")
+    print("Wrote six vector PDF/SVG pairs and 220 dpi previews.")

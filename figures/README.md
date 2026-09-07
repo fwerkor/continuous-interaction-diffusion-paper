@@ -1,6 +1,6 @@
 # CID vector figures
 
-The five figures share a point-based design system: blue for external facts,
+The six figures share a point-based design system: blue for external facts,
 purple for thought, green for display, and ochre for runtime operations.
 Labels and layout remain intelligible without color.
 
@@ -25,3 +25,7 @@ the individual PDF/SVG renderings and every page containing a figure at actual
 placement size and high resolution. Check label collisions, math subscripts,
 arrow endpoints, glyphs, clipping, and figure/caption placement. The generator
 rejects text outside the artboard; this complements visual inspection.
+
+The selective-revision figure is an illustrative running example, not an empirical
+model trace. Overview TCT rows show example dominant soft roles; roles may
+overlap within a cell. The anatomy figure aligns rows with typed fields.
