@@ -1,50 +1,28 @@
-\begin{tikzpicture}[
-  font=\small,
-  box/.style={draw, rounded corners=2pt, minimum height=1.0cm, align=center, inner sep=6pt},
-  arrow/.style={-{Latex[length=2mm]}, thick},
-  dashedarrow/.style={-{Latex[length=2mm]}, thick, dashed},
-  edgeLabel/.style={font=\scriptsize, inner sep=0pt}
-]
-  \node[box, fill=factfill, minimum width=4.0cm] (fact) at (-5.6,0)
-    {Fact channel $F$\\externally updated, model-read-only};
-  \node[box, fill=thoughtfill, minimum width=4.6cm] (thought) at (0,0)
-    {Thought channel $T$\\Typed Cognitive Tensor};
-  \node[box, fill=displayfill, minimum width=4.0cm] (display) at (5.6,0)
-    {Display channel $Y$\\user-visible token canvas};
-
-  \node[box, minimum width=4.0cm] (tools) at (-5.6,-3.6)
-    {Read-only sources\\search, files, state, calculators};
-  \node[box, fill=runtimefill, minimum width=4.6cm] (runtime) at (0,-3.6)
-    {CID runtime\\intent readout, binding lifecycle, refresh};
-
+\begin{tikzpicture}[cid figure,
+  box/.style={draw=figline, line width=0.7pt, rounded corners=3pt,
+    minimum height=1.40cm, text width=3.8cm, align=center, inner sep=6pt},
+  arrow/.style={-{Latex[length=2mm]},line width=0.8pt,draw=figink},
+  lab/.style={font=\sffamily\scriptsize,align=center,fill=white,inner sep=2pt}]
+  \node[box,cid fact] (fact) at (0,0)
+    {\textbf{Fact channel $F$}\\externally updated\\model-read-only};
+  \node[box,cid thought] (thought) at (5.45,0)
+    {\textbf{Thought channel $T$}\\Typed Cognitive Tensor};
+  \node[box,cid display] (display) at (10.9,0)
+    {\textbf{Display channel $Y$}\\user-visible token canvas};
+  \node[box,cid fact] (tools) at (0,-3.0)
+    {\textbf{Read-only sources}\\search, files, state, calculators};
+  \node[box,cid runtime] (runtime) at (5.45,-3.0)
+    {\textbf{CID runtime}\\intent readout, bindings, refresh};
   \draw[arrow] (fact.east) -- (thought.west);
-  \node[edgeLabel] at ($(fact.east)!0.5!(thought.west)+(0,0.78cm)$)
-    {protected conditioning};
-
+  \node[lab] at (2.725,0.95) {protected conditioning};
   \draw[arrow] (thought.east) -- (display.west);
-  \node[edgeLabel] at ($(thought.east)!0.5!(display.west)+(0,0.78cm)$)
-    {semantic realization};
-
-  \draw[arrow] (display.north) -- ++(0,1.38cm) -| (thought.north);
-  \node[edgeLabel] at ($(thought.north)!0.5!(display.north)+(0,1.68cm)$)
-    {format/length feedback};
-
-  \draw[arrow] (thought.south) -- (runtime.north);
-  \node[edgeLabel, anchor=west] at ($(thought.south)!0.5!(runtime.north)+(0.30cm,0)$)
-    {latent needs};
-
-  \draw[arrow] (runtime.west) -- (tools.east);
-  \node[edgeLabel] at ($(runtime.west)!0.5!(tools.east)+(0,0.72cm)$)
-    {bind / refresh};
-
-  \draw[arrow] (tools.north) -- (fact.south);
-  \node[edgeLabel, anchor=east] at ($(tools.north)!0.5!(fact.south)+(-0.30cm,0)$)
-    {external updates};
-
-  % Make the read-only-source origin explicit before curving toward thought.
-  \draw[dashedarrow] ($(tools.north)+(1.05cm,0)$)
-    -- ++(0,0.42cm)
-    .. controls (-4.30,-2.15) and (-3.20,-1.22) .. (thought.south west);
-  \node[edgeLabel, anchor=west] at (-3.20,-1.62)
-    {perceptual projections};
+  \node[lab] at (8.175,0.95) {semantic realization};
+  \draw[arrow,rounded corners=4pt] (display.north) -- ++(0,1.05) -| (thought.north);
+  \node[lab] at (8.175,1.95) {format / length feedback};
+  \draw[arrow] (thought.south) -- node[lab,right] {latent needs} (runtime.north);
+  \draw[arrow] (runtime.west) -- node[lab,below=4pt] {bind /\\refresh} (tools.east);
+  \draw[arrow] (tools.north) -- node[lab,left] {external\\updates} (fact.south);
+  \draw[arrow,dashed,rounded corners=4pt]
+    ([xshift=1.0cm]tools.north) -- ++(0,0.6) -- (3.85,-1.7) -- (thought.south west);
+  \node[lab] at (2.85,-1.22) {perceptual\\projections};
 \end{tikzpicture}

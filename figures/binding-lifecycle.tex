@@ -1,17 +1,17 @@
 \begin{tikzpicture}[
-  font=\small,
-  state/.style={draw, rounded corners=2pt, minimum height=0.82cm, align=center, inner xsep=8pt, inner ysep=4pt},
+  cid figure,
+  state/.style={draw=figline, line width=0.65pt, rounded corners=3pt, minimum height=0.82cm, align=center, inner xsep=8pt, inner ysep=4pt},
   flow/.style={-{Latex[length=1.8mm]}, thick},
   loop/.style={-{Latex[length=1.8mm]}, thick, dashed},
-  note/.style={font=\scriptsize, align=center}
+  note/.style={font=\sffamily\footnotesize, align=center}
 ]
   % Position each state from the previous node's actual border so all four
   % horizontal arrows have the same visible length even when text widens a box.
-  \node[state, fill=thoughtfill, minimum width=2.25cm] (need) at (0,0) {active\\information need};
-  \node[state, fill=runtimefill, minimum width=2.35cm, right=1.15cm of need] (bind) {persistent binding\\$b_j$};
-  \node[state, fill=factfill, minimum width=2.5cm, right=1.15cm of bind] (cache) {cached value\\version + provenance};
-  \node[state, fill=thoughtfill, minimum width=2.45cm, right=1.15cm of cache] (project) {contextual projection\\$P_j^s$};
-  \node[state, fill=displayfill, minimum width=2.35cm, right=1.15cm of project] (state) {evolving\\thought + display};
+  \node[state, cid thought, minimum width=2.25cm] (need) at (0,0) {active\\information need};
+  \node[state, cid runtime, minimum width=2.35cm, right=0.75cm of need] (bind) {persistent binding\\$b_j$};
+  \node[state, cid fact, minimum width=2.5cm, right=0.75cm of bind] (cache) {cached value\\version + provenance};
+  \node[state, cid thought, minimum width=2.45cm, right=0.75cm of cache] (project) {contextual projection\\$P_j^s$};
+  \node[state, cid display, minimum width=2.35cm, right=0.75cm of project] (state) {evolving\\thought + display};
 
   \draw[flow] (need) -- (bind);
   \draw[flow] (bind) -- (cache);
@@ -21,7 +21,7 @@
   \node[state, minimum width=2.05cm, below=1.18cm of bind] (retire) {retire binding};
   \draw[flow] (bind.south) -- node[note, right] {need inactive} (retire.north);
 
-  \node[state, fill=factfill, minimum width=2.6cm, below=1.18cm of cache] (source) {external read\\or refresh};
+  \node[state, cid fact, minimum width=2.6cm, below=1.18cm of cache] (source) {external read\\or refresh};
   \draw[flow] (source.north) -- (cache.south);
   \node[note] at ($(source.south)+(0,-0.42)$) {first fetch or source-version change};
 

@@ -1,20 +1,20 @@
 \begin{tikzpicture}[
-  font=\small,
-  stage/.style={draw, rounded corners=2pt, minimum height=0.72cm, align=center, inner xsep=6pt, inner ysep=3pt},
+  cid figure,
+  stage/.style={draw=figline, line width=0.65pt, rounded corners=3pt, minimum height=0.72cm, align=center, inner xsep=6pt, inner ysep=3pt},
   event/.style={circle, draw, minimum size=4.6mm, inner sep=0pt},
   line/.style={-{Latex[length=1.8mm]}, thick},
   async/.style={-{Latex[length=1.8mm]}, thick, dashed},
-  note/.style={font=\scriptsize, align=center},
-  edgeLabel/.style={font=\scriptsize, fill=white, inner sep=1pt}
+  note/.style={font=\sffamily\scriptsize, align=center},
+  edgeLabel/.style={font=\sffamily\scriptsize, fill=white, inner sep=1pt}
 ]
   % Turn-based AR lane: each observation starts another discrete decision point.
-  \node[font=\bfseries, anchor=east] at (-0.35,2.15) {Turn-based AR};
-  \node[stage, fill=thoughtfill, minimum width=1.95cm] (arreason) at (1.05,2.15) {reason};
-  \node[stage, fill=runtimefill, minimum width=2.05cm] (arcall) at (3.70,2.15) {explicit call};
+  \node[font=\sffamily\bfseries, anchor=east] at (-0.35,2.15) {Turn-based AR};
+  \node[stage, cid thought, minimum width=1.95cm] (arreason) at (1.05,2.15) {reason};
+  \node[stage, cid runtime, minimum width=2.05cm] (arcall) at (3.70,2.15) {explicit call};
   \node[stage, minimum width=1.55cm] (arwait) at (6.10,2.15) {wait};
-  \node[stage, fill=factfill, minimum width=2.05cm] (arobs) at (8.50,2.15) {observation};
+  \node[stage, cid fact, minimum width=2.05cm] (arobs) at (8.50,2.15) {observation};
   \node[stage, minimum width=1.55cm] (ardone) at (10.85,2.15) {done?};
-  \node[stage, fill=displayfill, minimum width=2.15cm] (arfinal) at (13.35,2.15) {final response};
+  \node[stage, cid display, minimum width=2.15cm] (arfinal) at (13.35,2.15) {final response};
   \draw[line] (arreason) -- (arcall);
   \draw[line] (arcall) -- (arwait);
   \draw[line] (arwait) -- (arobs);
@@ -24,14 +24,14 @@
     -- node[edgeLabel, right, pos=0.45] {no} ++(0,0.78cm) -| (arreason.north);
 
   % CID lane: the dLLM trajectory keeps advancing while the runtime performs I/O.
-  \node[font=\bfseries, anchor=east] at (-0.35,-0.10) {CID on a dLLM};
+  \node[font=\sffamily\bfseries, anchor=east] at (-0.35,-0.10) {CID on a dLLM};
   % Representative updates only: ellipses denote arbitrary-length portions of the trajectory.
-  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cidi) at (2.05,-0.10) {$s_i$};
-  \node[stage, fill=thoughtfill, minimum width=1.45cm] (cidi1) at (3.95,-0.10) {$s_{i+1}$};
-  \node[stage, fill=thoughtfill, minimum width=1.25cm] (cidj) at (7.05,-0.10) {$s_j$};
-  \node[stage, fill=thoughtfill, minimum width=1.45cm] (cidj1) at (8.95,-0.10) {$s_{j+1}$};
+  \node[stage, cid thought, minimum width=1.25cm] (cidi) at (2.05,-0.10) {$s_i$};
+  \node[stage, cid thought, minimum width=1.45cm] (cidi1) at (3.95,-0.10) {$s_{i+1}$};
+  \node[stage, cid thought, minimum width=1.25cm] (cidj) at (7.05,-0.10) {$s_j$};
+  \node[stage, cid thought, minimum width=1.45cm] (cidj1) at (8.95,-0.10) {$s_{j+1}$};
   \node[stage, minimum width=1.95cm] (cidcheck) at (12.25,-0.10) {converged?};
-  \node[stage, fill=displayfill, minimum width=2.15cm] (cidfinal) at (14.85,-0.10) {final response};
+  \node[stage, cid display, minimum width=2.15cm] (cidfinal) at (14.85,-0.10) {final response};
 
   % Draw continuous arrows first, then mask only the small area occupied by each ellipsis.
   \draw[line] (0.24,-0.10) -- (cidi.west);
@@ -39,9 +39,9 @@
   \draw[line] (cidi1) -- (cidj);
   \draw[line] (cidj) -- (cidj1);
   \draw[line] (cidj1) -- (cidcheck);
-  \node[font=\large, fill=white, inner xsep=2pt, inner ysep=0pt] (pre) at (0.60,-0.10) {$\cdots$};
-  \node[font=\large, fill=white, inner xsep=2pt, inner ysep=0pt] (mid) at (5.48,-0.10) {$\cdots$};
-  \node[font=\large, fill=white, inner xsep=2pt, inner ysep=0pt] (post) at (10.48,-0.10) {$\cdots$};
+  \node[font=\sffamily\large, fill=white, inner xsep=2pt, inner ysep=0pt] (pre) at (0.60,-0.10) {$\cdots$};
+  \node[font=\sffamily\large, fill=white, inner xsep=2pt, inner ysep=0pt] (mid) at (5.48,-0.10) {$\cdots$};
+  \node[font=\sffamily\large, fill=white, inner xsep=2pt, inner ysep=0pt] (post) at (10.48,-0.10) {$\cdots$};
   \draw[line] (cidcheck.east) -- (cidfinal.west);
   \node[note] at ($(cidcheck.east)!0.5!(cidfinal.west)+(0,0.14cm)$) {yes};
   \draw[line, rounded corners=3pt] (cidcheck.south)
@@ -51,8 +51,8 @@
   \node[note] at (2.05,0.54) {need emerges};
   \node[note] at (7.05,0.54) {assimilate result};
 
-  \node[stage, fill=runtimefill, minimum width=1.90cm] (bind) at (2.05,-1.52) {bind + launch};
-  \node[stage, fill=factfill, minimum width=2.35cm] (job) at (4.95,-1.52) {external read\\in flight};
+  \node[stage, cid runtime, minimum width=1.90cm] (bind) at (2.05,-1.52) {bind + launch};
+  \node[stage, cid fact, minimum width=2.35cm] (job) at (4.95,-1.52) {external read\\in flight};
 
   \draw[line] (cidi.south) -- (bind.north);
   \node[note, anchor=west] at ($(cidi.south)!0.5!(bind.north)+(0.10cm,0)$) {need};

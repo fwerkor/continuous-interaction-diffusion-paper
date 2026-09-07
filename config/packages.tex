@@ -19,10 +19,24 @@
 \usepackage{url}
 
 \definecolor{linkblue}{RGB}{20,72,140}
-\definecolor{factfill}{RGB}{238,244,252}
-\definecolor{thoughtfill}{RGB}{244,240,252}
-\definecolor{displayfill}{RGB}{240,248,242}
-\definecolor{runtimefill}{RGB}{252,244,235}
+\definecolor{factfill}{RGB}{230,241,248}
+\definecolor{thoughtfill}{RGB}{237,233,248}
+\definecolor{displayfill}{RGB}{229,243,237}
+\definecolor{runtimefill}{RGB}{252,239,218}
+\definecolor{figink}{HTML}{26384A}
+\definecolor{figline}{HTML}{738394}
+\definecolor{factaccent}{HTML}{28789C}
+\definecolor{thoughtaccent}{HTML}{7353A5}
+\definecolor{displayaccent}{HTML}{2D8165}
+\definecolor{runtimeaccent}{HTML}{AF7629}
+\tikzset{
+  cid figure/.style={font=\sffamily\small, text=figink, draw=figline,
+    every path/.append style={line cap=round,line join=round}},
+  cid fact/.style={fill=factfill,draw=factaccent},
+  cid thought/.style={fill=thoughtfill,draw=thoughtaccent},
+  cid display/.style={fill=displayfill,draw=displayaccent},
+  cid runtime/.style={fill=runtimefill,draw=runtimeaccent}
+}
 \usepackage[
   colorlinks=true,
   allcolors=linkblue,
