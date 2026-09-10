@@ -6,7 +6,7 @@ All formal performance results are defined on the corrected CID model retrained 
 \subsection{Model and Evaluation Setup}
 \label{sec:evaluation-setup}
 
-The final model is trained in two stages. Stage A freezes the iLLaDA backbone and learns CID-specific channel projections, external-perception fusion, and prediction heads. Stage B then unfreezes the backbone and continues optimization under the same corrected train--runtime contract. The final checkpoint used for evaluation is fixed before benchmark results are collected.
+The final model is trained in two stages. Stage A freezes the iLLaDA backbone and learns CID-specific channel projections, external-perception fusion, and prediction heads. Stage B then unfreezes the backbone and continues optimization under the same corrected train--runtime contract. The selected Stage-B configuration uses a CID peak learning rate of $2\times10^{-5}$ and a backbone peak learning rate of $5\times10^{-6}$, with 1\% linear warmup, a WSD stable phase, and a final 10\% linear decay to 10\% of peak. The final checkpoint used for evaluation is fixed before benchmark results are collected.
 
 \subsection{End-to-End Tool-Augmented Performance}
 \label{sec:end-to-end-evaluation}

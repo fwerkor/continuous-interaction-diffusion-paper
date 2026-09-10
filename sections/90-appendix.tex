@@ -223,9 +223,32 @@ The corrected run trains Stage A from the pinned base model under the contract s
 \cref{sec:evaluation-setup}. Stage A keeps
 the frozen backbone in bfloat16 while retaining trainable CID modules in FP32 and using bfloat16
 autocast for the forward pass; thresholded runtime probabilities are evaluated in FP32. Stage B then
-unfreezes the backbone and uses FSDP~\citep{zhao2023fsdp}/AdamW~\citep{loshchilov2019adamw}. To avoid reporting stale pilot settings as final
-hyperparameters, the final training table is populated only from frozen checkpoint metadata after the
-run completes. All formal performance claims therefore refer to one well-defined model and train--runtime contract.
+unfreezes the backbone and uses FSDP~\citep{zhao2023fsdp}/AdamW~\citep{loshchilov2019adamw}. The selected Stage-B defaults are a CID peak learning rate of $2\times10^{-5}$, a backbone peak learning rate of $5\times10^{-6}$, 1\% linear warmup, a WSD stable phase, and a final 10\% linear decay to 10\% of peak.
+
+\paragraph{Stage-B learning-rate calibration.}
+We selected the CID-module peak rate with a short fixed-budget sweep from the same Stage-A checkpoint. All candidates used the corrected data-order sampler, WSD, the same seed and batch geometry, a fixed backbone peak rate of $5\times10^{-6}$, 2,400 rollout windows per rank, and the same 512-example fixed-noise validation set. The short probe is used only for configuration selection; formal model results use the subsequently trained final checkpoint.
+
+\begin{table}[t]
+  \centering
+  \caption{Short Stage-B learning-rate calibration. Metrics are fixed-seed free-rollout validation percentages; lower recovery failure is better.}
+  \label{tab:stageb-lr-sweep}
+  \footnotesize
+  \setlength{\tabcolsep}{3.0pt}
+  \begin{tabular}{rrrrr}
+    \toprule
+    CID LR & Display exact & Need F1 & Conv. & Recovery fail. \\
+    \midrule
+    $\mathbf{2\times10^{-5}}$ & \textbf{41.40} & \textbf{15.70} & 90.79 & 4.17 \\
+    $3\times10^{-5}$ & 37.02 & 13.47 & 90.63 & 4.22 \\
+    $4\times10^{-5}$ & 39.11 & 12.75 & 88.89 & \textbf{3.95} \\
+    $5\times10^{-5}$ & 39.67 & 14.96 & \textbf{91.96} & 4.03 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The $2\times10^{-5}$ setting gives the strongest overall deployment-oriented profile, leading both materialized-display exact rate and Need F1 while retaining high convergence. We therefore use it as the Stage-B default and keep the backbone peak rate fixed at $5\times10^{-6}$.
+
+To avoid reporting stale pilot settings as final hyperparameters, the final training table is populated only from frozen checkpoint metadata after the run completes. All formal performance claims therefore refer to one well-defined model and train--runtime contract.
 
 \section{Open Technical Questions}
 \label{app:questions}
