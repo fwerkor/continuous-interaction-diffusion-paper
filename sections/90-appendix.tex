@@ -150,8 +150,6 @@ Formal training uses the current public \texttt{fwerkor/CID-Dataset} release~\ci
 
 \begin{table*}[t]
   \centering
-  \caption{CID-Dataset components used for CID training. Task counts are semantic tasks before schedule expansion; trajectory counts are materialized trajectories; training-transition counts include each component's bootstrap transitions. Weight is the semantic component multiplier applied after per-task balancing.}
-  \label{tab:dataset-components}
   \scriptsize
   \begin{tabular}{lrrrr}
     \toprule
@@ -181,6 +179,8 @@ Formal training uses the current public \texttt{fwerkor/CID-Dataset} release~\ci
     Total & 192,729 & 422,230 & 3,146,786 & -- \\
     \bottomrule
   \end{tabular}
+  \caption{CID-Dataset components used for CID training. Task counts are semantic tasks before schedule expansion; trajectory counts are materialized trajectories; training-transition counts include each component's bootstrap transitions. Weight is the semantic component multiplier applied after per-task balancing.}
+  \label{tab:dataset-components}
 \end{table*}
 
 The natural-public component contributes 30,000 NQ-Open train tasks~\citep{kwiatkowski2019natural,lee2019latent} (CC-BY-SA-3.0), 4,500 OASST1 train
@@ -230,8 +230,6 @@ We selected the CID-module peak rate with a short fixed-budget sweep from the sa
 
 \begin{table}[t]
   \centering
-  \caption{Short Stage-B learning-rate calibration. Metrics are fixed-seed free-rollout validation percentages; lower recovery failure is better.}
-  \label{tab:stageb-lr-sweep}
   \footnotesize
   \setlength{\tabcolsep}{3.0pt}
   \begin{tabular}{rrrrr}
@@ -244,6 +242,8 @@ We selected the CID-module peak rate with a short fixed-budget sweep from the sa
     $5\times10^{-5}$ & 39.67 & 14.96 & \textbf{91.96} & 4.03 \\
     \bottomrule
   \end{tabular}
+  \caption{Short Stage-B learning-rate calibration. Metrics are fixed-seed free-rollout validation percentages; lower recovery failure is better.}
+  \label{tab:stageb-lr-sweep}
 \end{table}
 
 The $2\times10^{-5}$ setting gives the strongest overall deployment-oriented profile, leading both materialized-display exact rate and Need F1 while retaining high convergence. We therefore use it as the Stage-B default and keep the backbone peak rate fixed at $5\times10^{-6}$.

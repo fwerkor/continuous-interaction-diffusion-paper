@@ -36,8 +36,6 @@ Because CID's learned channels, interaction heads, and runtime state transitions
 
 \begin{table}[t]
   \centering
-  \caption{Three targeted CID ablations. The provisional-state comparison uses matched epoch-2 checkpoints at 62,645 optimizer steps and fixed-seed free-rollout validation. The two runtime ablations reuse the final corrected checkpoint.}
-  \label{tab:cid-ablation}
   \scriptsize
   \setlength{\tabcolsep}{2.5pt}
   \begin{tabular}{p{0.20\linewidth}p{0.22\linewidth}p{0.27\linewidth}p{0.22\linewidth}}
@@ -49,6 +47,8 @@ Because CID's learned channels, interaction heads, and runtime state transitions
     Continuous revision & normal versus freeze after materialization & final accuracy; stale rate; repair rate & \textit{pending runtime replay} \\
     \bottomrule
   \end{tabular}
+  \caption{Three targeted CID ablations. The provisional-state comparison uses matched epoch-2 checkpoints at 62,645 optimizer steps and fixed-seed free-rollout validation. The two runtime ablations reuse the final corrected checkpoint.}
+  \label{tab:cid-ablation}
 \end{table}
 
 \paragraph{Provisional-state-aware interaction decoding.}
