@@ -197,14 +197,7 @@ New evidence may change the editability of existing cells. Conceptually, let $\D
 \end{equation}
 where $\Delta^-_{j,i}$ denotes evidence favoring reopening and $\Delta^+_{j,i}$ evidence favoring stabilization. The current implementation directly predicts a bounded local-noise delta together with a \textsc{keep}, \textsc{reopen}, or \textsc{stabilize} action through the neural core, with the runtime lifecycle gate applying the legal transition and no separate support/conflict heads. Evidence-linked display positions are revised analogously through the learned $\chi_k$ routing, remasking, and bounded visible-token revision.
 
-Local reopening is important for efficiency as well as correctness. New evidence should revise invalidated state while preserving unrelated work that was already correct. Adjusting editability per cell therefore aims to preserve useful computation while concentrating additional denoising on regions that actually need correction. \Cref{fig:selective-revision} illustrates this selective update using the running example.
-
-\begin{figure*}[t]
-  \centering
-  \input{figures/selective-revision}
-  \caption{Local revision under new evidence: a conflicting hypothesis is reopened, a claim is grounded, and its display span is updated while unrelated state is preserved.}
-  \label{fig:selective-revision}
-\end{figure*}
+Local reopening is important for efficiency as well as correctness. New evidence should revise invalidated state while preserving unrelated work that was already correct. Adjusting editability per cell therefore aims to preserve useful computation while concentrating additional denoising on regions that actually need correction.
 
 \subsection{Asynchronous Runtime}
 \label{sec:runtime}
