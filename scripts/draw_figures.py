@@ -162,7 +162,7 @@ def overview():
     d.text(413,127,"Revisable tokens",7,TEAL,ha="center")
     # Read-only sources and runtime are independent participants.
     d.rect(5,195,132,51,"white",BLUE)
-    d.text(14,207,"READ-ONLY SOURCES",8,BLUE,"bold")
+    d.text(14,207,"TOOLS / SOURCES",8,BLUE,"bold")
     d.text(14,224,"Search  /  files  /  state",7.5)
     d.text(14,236,"Calculators",7.5)
     d.rect(176,195,190,51,PALE[AMBER],AMBER)
