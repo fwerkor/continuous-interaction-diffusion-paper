@@ -11,7 +11,14 @@ This difference becomes important once external tools are introduced. Suppose a 
 
 We propose \emph{Continuous Interaction Diffusion} (\cid), a diffusion-native architecture in which model cognition, external perception, and user-visible generation evolve concurrently. The central abstraction is a \emph{persistent perceptual binding}. When the model continues to need some information, the runtime maintains a binding between that need and an external source. If the source is static, the runtime can reuse the cached result while repeatedly re-projecting its meaning into the evolving thought state. If the source changes, the runtime can refresh or stream new observations. The model therefore does not have to repeatedly serialize the same request merely to keep the corresponding information cognitively active.
 
-CID separates the system state into three coupled channels. The \emph{fact channel} contains information controlled outside the generative state, such as user-pinned constraints or authoritative external values; the model may read these facts but cannot overwrite them. The \emph{thought channel} contains hypotheses, plans, unresolved information needs, tool intentions, interpretations, uncertainty, and intermediate conclusions. We represent it as a \emph{Typed Cognitive Tensor} (\tct), a continuous locally diffused structure augmented with role distributions, symbolic anchors, source links, uncertainty, and per-cell noise levels. The \emph{display channel} is the evolving token canvas that converges to the user-visible response. These channels can change together while obeying different representations and write permissions.
+CID separates the system state into three coupled channels. The \emph{fact channel} contains information controlled outside the generative state, such as user-pinned constraints or authoritative external values; the model may read these facts but cannot overwrite them. The \emph{thought channel} contains hypotheses, plans, unresolved information needs, tool intentions, interpretations, uncertainty, and intermediate conclusions. We represent it as a \emph{Typed Cognitive Tensor} (\tct), a continuous locally diffused structure augmented with role distributions, symbolic anchors, source links, uncertainty, and per-cell noise levels. The \emph{display channel} is the evolving token canvas that converges to the user-visible response. These channels can change together while obeying different representations and write permissions. \Cref{fig:cid-overview} summarizes the resulting model--runtime architecture.
+
+\begin{figure*}[t!]
+  \centering
+  \input{figures/cid-overview}
+  \caption{Overview of the \cid model--runtime architecture.}
+  \label{fig:cid-overview}
+\end{figure*}
 
 This paper formalizes the architecture and makes the design precise enough to implement and falsify. Its contributions are:
 \begin{itemize}[leftmargin=*]
